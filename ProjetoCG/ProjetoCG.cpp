@@ -7,10 +7,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+#include <gtx/string_cast.hpp>
 
 #include<string>
 #include<fstream>
@@ -22,7 +22,7 @@
 
 void initOpenGL();
 std::vector<Line> createStar();
-glm::vec3 calculateCenter();
+glm::vec3 calculateCenter(GLfloat* vertexVector);
 
 GLFWwindow *window = NULL;
 
@@ -39,7 +39,7 @@ GLfloat far = 1.0f;
 
 glm::mat4 ortho = glm::ortho(left, right, bottom, top, near, far);
 
-GLfloat starVertex[] = {
+GLfloat starVertexGlobal[] = {
     // X       Y       Z     R     G     B 
     21.18f,    5.0f,  0.0f, 1.0f, 0.0f, 0.0f, // Ponto F 
     13.09f,  -19.9f,  0.0f, 0.0f, 1.0f, 0.0f, // Ponto G 
@@ -63,6 +63,9 @@ int main(){
 
     shader.Bind();
 
+    GLint pulos = 8;
+    GLfloat posY = 0.0f;
+    GLfloat speedY = 0.02f;
 	GLfloat angle = 0.0f;
     GLfloat passoAngle = 0.01f;
 	GLfloat posX = 0.0f;
@@ -70,13 +73,38 @@ int main(){
 
     std::vector<Line> starLines = createStar();
 
-    glm::vec3 center = calculateCenter();
+    glm::vec3 center = calculateCenter(starVertexGlobal);
 
     while(!glfwWindowShouldClose(window)){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
        
-        if(angle <= 90.0f){
+
+        if (pulos > 0) {
+
+            posY += speedY;
+
+            for (int i = 0; i < 15; i++) {
+
+                starLines[i].translate(glm::vec3(0.0f, posY, 0.0f));
+
+            }
+
+            if (posY <= 0.0f || posY >= 20.0f) {
+
+                speedY *= -1.0f;
+
+                if (posY <= 0.0f) {
+
+                    pulos--;
+
+                }
+
+            }
+    
+        }
+
+        if(angle <= 90.0f && pulos == 0){
 			angle += passoAngle;
             posX += passoX;
 
@@ -85,8 +113,6 @@ int main(){
                 starLines[i].rotate(-angle, glm::vec3(0.0f, 0.0f, 1.0f), center);
                 starLines[i].translate(glm::vec3(posX, 0.0f, 0.0f));
 
-                shader.SendUniformData("Matrix", ortho * starLines[i].getModel());
-                starLines[i].draw();
             }
         }
 
@@ -157,10 +183,10 @@ std::vector<Line> createStar(){
         GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 6;
 
         starLines.emplace_back(
-            glm::vec3(starVertex[indiceLinha1], starVertex[indiceLinha1 + 1], starVertex[indiceLinha1 + 2]),
-            glm::vec3(starVertex[indiceLinha2], starVertex[indiceLinha2 + 1], starVertex[indiceLinha2 + 2]),
-            glm::vec3(starVertex[indiceLinha1 + 3], starVertex[indiceLinha1 + 4], starVertex[indiceLinha1 + 5]),
-            glm::vec3(starVertex[indiceLinha2 + 3], starVertex[indiceLinha2 + 4], starVertex[indiceLinha2 + 5])
+            glm::vec3(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]),
+            glm::vec3(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]),
+            glm::vec3(starVertexGlobal[indiceLinha1 + 3], starVertexGlobal[indiceLinha1 + 4], starVertexGlobal[indiceLinha1 + 5]),
+            glm::vec3(starVertexGlobal[indiceLinha2 + 3], starVertexGlobal[indiceLinha2 + 4], starVertexGlobal[indiceLinha2 + 5])
         );
 
     }
@@ -168,13 +194,13 @@ std::vector<Line> createStar(){
     return starLines;
 }
 
-glm::vec3 calculateCenter(){
+glm::vec3 calculateCenter(GLfloat *vertexVector) {
 
     glm::vec3 center(0.0f, 0.0f, 0.0f);
     size_t numVertices = 10;
 
     for (size_t i = 0; i < numVertices; ++i) {
-        center += glm::vec3(starVertex[i * 6], starVertex[i * 6 + 1], starVertex[i * 6 + 2]);
+        center += glm::vec3(vertexVector[i * 6], vertexVector[i * 6 + 1], vertexVector[i * 6 + 2]);
     }
 
     center /= static_cast<float>(numVertices);

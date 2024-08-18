@@ -1,7 +1,7 @@
 #include "Line.h"
 
 #include<GL/glew.h>
-#include<glm/gtc/matrix_transform.hpp>
+#include<gtc/matrix_transform.hpp>
 
 Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec3 color1, glm::vec3 color2) :
 	_translation(glm::mat4(1.0f)),

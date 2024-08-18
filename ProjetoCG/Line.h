@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/glm.hpp>
+#include <glm.hpp>
 #include <GL/glew.h>
 
 class Line{
