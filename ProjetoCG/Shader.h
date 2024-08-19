@@ -1,6 +1,6 @@
 #pragma once
 #include<string>
-#include<glm/glm.hpp>
+#include<glm.hpp>
 #include<unordered_map>
 
 class Shader

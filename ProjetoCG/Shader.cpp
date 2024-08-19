@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include<fstream>
 #include<sstream>
-#include<glm/gtc/type_ptr.hpp>
+#include<gtc/type_ptr.hpp>
 
 #include "Shader.h"
 #include "Error.h"
