@@ -65,7 +65,7 @@ int main(){
 
     GLint pulos = 8;
     GLfloat posY = 0.0f;
-    GLfloat speedY = 0.02f;
+    GLfloat speedY = 0.01f;
 	GLfloat angle = 0.0f;
     GLfloat passoAngle = 0.01f;
 	GLfloat posX = 0.0f;
