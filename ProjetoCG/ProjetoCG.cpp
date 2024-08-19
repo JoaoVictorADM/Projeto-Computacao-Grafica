@@ -117,8 +117,10 @@ int main(){
         }
 
         for(int i = 0; i < 15; i++) {
+
             shader.SendUniformData("Matrix", ortho * starLines[i].getModel());
             starLines[i].draw();
+
         }
 
         
