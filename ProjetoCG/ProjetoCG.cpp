@@ -80,13 +80,13 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
        
 
-        if (pulos > 0) {
+        if(pulos > 0){
 
             posY += speedY;
 
             for (int i = 0; i < 15; i++) {
 
-                starLines[i].translate(glm::vec3(0.0f, posY, 0.0f));
+                starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
 
             }
 
@@ -110,20 +110,18 @@ int main(){
 
             for(int i = 0; i < 15; i++){
 
-                starLines[i].rotate(-angle, glm::vec3(0.0f, 0.0f, 1.0f), center);
-                starLines[i].translate(glm::vec3(posX, 0.0f, 0.0f));
+                starLines[i].rotate(-passoAngle, glm::vec3(0.0f, 0.0f, 1.0f), center);
+                starLines[i].translate(glm::vec3(passoX, 0.0f, 0.0f));
 
             }
         }
 
         for(int i = 0; i < 15; i++) {
 
-            shader.SendUniformData("Matrix", ortho * starLines[i].getModel());
+            shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
             starLines[i].draw();
-
+            
         }
-
-        
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

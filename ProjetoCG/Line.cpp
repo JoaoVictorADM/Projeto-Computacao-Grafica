@@ -4,10 +4,13 @@
 #include<gtc/matrix_transform.hpp>
 
 Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec3 color1, glm::vec3 color2) :
-	_translation(glm::mat4(1.0f)),
-	_rotation(glm::mat4(1.0f)),
-	_scale(glm::mat4(1.0f)),
-	_model(glm::mat4(1.0f)), 
+	_vectorTranslation(glm::vec3(0.0f)),
+	_vectorRotation(glm::vec3(0.0f)),
+	_vectorScale(glm::vec3(0.0f)),
+	_matrixTranslation(glm::mat4(1.0f)),
+	_matrixRotation(glm::mat4(1.0f)),
+	_matrixScale(glm::mat4(1.0f)),
+	_matrixModel(glm::mat4(1.0f)),
 	_VAO(0),
 	_VBO(0)
 {
@@ -34,24 +37,32 @@ void Line::draw(){
 }
 
 void Line::translate(glm::vec3 translation){
-	_translation = glm::translate(glm::mat4(1.0f), translation);
+	_vectorTranslation += translation;
+	_matrixTranslation = glm::translate(glm::mat4(1.0f), _vectorTranslation);
 	updateModel();
 }
 
 void Line::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center){
 
+	_vectorRotation += axis * angle;
+
 	glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -center); // Translação para o ponto médio
-	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis); // Rotação
+
+	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(_vectorRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	rotation = glm::rotate(rotation, glm::radians(_vectorRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	rotation = glm::rotate(rotation, glm::radians(_vectorRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
 	glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), center); // Translação de volta para a posição original
 
-	_rotation = translationBack * rotation * translationToOrigin;
+	_matrixRotation = translationBack * rotation * translationToOrigin; 
 
 	updateModel();
 
 }
 
-void Line::scale(glm::vec3 scale) {
-	_scale = glm::scale(glm::mat4(1.0f), scale);
+void Line::scale(glm::vec3 scale){
+	_vectorScale += scale;
+	_matrixScale = glm::scale(glm::mat4(1.0f), _vectorScale);
 	updateModel();
 }
 
@@ -62,30 +73,42 @@ void Line::printarPontos(){
 
 }
 
-glm::mat4 Line::getTranslation() const{
-	return _translation;
+glm::vec3 Line::getVectorTranslation() const{
+	return _vectorTranslation;
 }
 
-glm::mat4 Line::getRotation() const{
-	return _rotation;
+glm::vec3 Line::getVectorRotation() const{
+	return _vectorTranslation;
 }
 
-glm::mat4 Line::getScale() const{
-	return _scale;
+glm::vec3 Line::getVectorScale() const{
+	return _vectorTranslation;
 }
 
-glm::mat4 Line::getModel() const{
-	return _model;
+glm::mat4 Line::getMatrixTranslation() const{
+	return _matrixTranslation;
+}
+
+glm::mat4 Line::getMatrixRotation() const{
+	return _matrixRotation;
+}
+
+glm::mat4 Line::getMatrixScale() const{
+	return _matrixScale;
+}
+
+glm::mat4 Line::getMatrixModel() const{
+	return _matrixModel;
 }
 
 void Line::updateModel(){
-	_model = _translation * _rotation * _scale;
+	_matrixModel = _matrixTranslation * _matrixRotation * _matrixScale;
 }
 
 void Line::CreateBuffers(){
 	glGenVertexArrays(1, &_VAO);
 	glGenBuffers(1, &_VBO);
-}
+}	
 
 void Line::FillBuffers(){
 

@@ -21,10 +21,14 @@ class Line{
 
 		void printarPontos();
 
-		glm::mat4 getTranslation() const;
-		glm::mat4 getRotation() const;
-		glm::mat4 getScale() const;
-		glm::mat4 getModel() const;
+		glm::vec3 getVectorTranslation() const;
+		glm::vec3 getVectorRotation() const;
+		glm::vec3 getVectorScale() const;
+
+		glm::mat4 getMatrixTranslation() const;
+		glm::mat4 getMatrixRotation() const;
+		glm::mat4 getMatrixScale() const;
+		glm::mat4 getMatrixModel() const;
 
 	private: 
 
@@ -33,13 +37,17 @@ class Line{
 		glm::vec3 _color1;
 		glm::vec3 _color2;
 
+		glm::vec3 _vectorTranslation;
+		glm::vec3 _vectorRotation;
+		glm::vec3 _vectorScale;
+
 		unsigned int _VAO;
 		unsigned int _VBO;
 
-		glm::mat4 _translation;
-		glm::mat4 _rotation;
-		glm::mat4 _scale;
-		glm::mat4 _model;
+		glm::mat4 _matrixTranslation;
+		glm::mat4 _matrixRotation;
+		glm::mat4 _matrixScale;
+		glm::mat4 _matrixModel;
 		
 		void updateModel();
 
