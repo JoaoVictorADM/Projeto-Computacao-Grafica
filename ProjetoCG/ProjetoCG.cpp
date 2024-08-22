@@ -24,6 +24,8 @@ void initOpenGL();
 std::vector<Line> createStar();
 glm::vec3 calculateCenter(GLfloat* vertexVector);
 
+const float EPSILON = 0.001f;
+
 GLFWwindow *window = NULL;
 
 const int gWindowWidth = 800;
@@ -63,64 +65,95 @@ int main(){
 
     shader.Bind();
 
-    GLint pulos = 8;
-    GLfloat posY = 0.0f;
+    GLboolean jumpScene = true;
+    GLboolean spinRightScene = false;
+    GLboolean dismantleScene = false;
+
+    GLint jumps = 1;
     GLfloat speedY = 0.01f;
-	GLfloat angle = 0.0f;
-    GLfloat passoAngle = 0.01f;
-	GLfloat posX = 0.0f;
-    GLfloat passoX = 0.005f;
+    GLfloat speedAngle = 0.01f;
+    GLfloat speedX = 0.005f;
 
     std::vector<Line> starLines = createStar();
 
     glm::vec3 center = calculateCenter(starVertexGlobal);
 
-    while(!glfwWindowShouldClose(window)){
+    while(!glfwWindowShouldClose(window)) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-       
 
-        if(pulos > 0){
 
-            posY += speedY;
+        if(jumpScene){
 
-            for (int i = 0; i < 15; i++) {
+            for(int i = 0; i < 15; i++) {
 
                 starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
+                shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+                starLines[i].draw();
 
             }
 
-            if (posY <= 0.0f || posY >= 20.0f) {
+            if(starLines[0].getVectorTranslation().y <= 0.0f || starLines[0].getVectorTranslation().y >= 20.0f) {
 
                 speedY *= -1.0f;
 
-                if (posY <= 0.0f) {
+                if(starLines[0].getVectorTranslation().y <= 0.0f){
 
-                    pulos--;
+                    jumps--;
+
+                    if(jumps == 0){
+                        jumpScene = false;
+                        spinRightScene = true;
+                        
+                    }
 
                 }
 
             }
-    
+
         }
 
-        if(angle <= 90.0f && pulos == 0){
-			angle += passoAngle;
-            posX += passoX;
+        if(spinRightScene){
 
-            for(int i = 0; i < 15; i++){
+            for (int i = 0; i < 15; i++) {
 
-                starLines[i].rotate(-passoAngle, glm::vec3(0.0f, 0.0f, 1.0f), center);
-                starLines[i].translate(glm::vec3(passoX, 0.0f, 0.0f));
+                starLines[i].rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), center);
+                starLines[i].translate(glm::vec3(speedX, 0.0f, 0.0f));
 
+                shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+                starLines[i].draw();
+
+            }
+
+            if(fabs(starLines[0].getVectorRotation().z + 90.0f) < EPSILON){
+                spinRightScene = false;
+                dismantleScene = true;
             }
         }
 
-        for(int i = 0; i < 15; i++) {
+        if(dismantleScene){
 
-            shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
-            starLines[i].draw();
-            
+            for (int i = 0; i < 15; i++) {
+
+                if (((i == 3 || i == 4) && starLines[14].getVectorRotation().z < -17.90f) ||
+                    (i == 5 && starLines[14].getVectorRotation().z < 54.0f) ||
+                    (i == 6 && starLines[14].getVectorRotation().z < 126.0f) ||
+                    (i >= 7)
+                    ){
+
+                    starLines[i].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), center);
+                    starLines[i].translate(glm::vec3(-speedX, 0.0f, 0.0f));
+
+                }
+
+				if(i == 6 && starLines[14].getVectorRotation().z >= 180.0f && starLines[6].getVectorTranslation().y ) {
+                    starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
+				}
+
+                shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+                starLines[i].draw();
+            }
+
         }
 
         /* Swap front and back buffers */

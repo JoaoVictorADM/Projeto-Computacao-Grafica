@@ -21,6 +21,9 @@ class Line{
 
 		void printarPontos();
 
+		glm::vec3 getPosition1() const;
+		glm::vec3 getPosition2() const;
+
 		glm::vec3 getVectorTranslation() const;
 		glm::vec3 getVectorRotation() const;
 		glm::vec3 getVectorScale() const;

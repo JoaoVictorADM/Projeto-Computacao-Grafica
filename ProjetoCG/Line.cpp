@@ -73,16 +73,32 @@ void Line::printarPontos(){
 
 }
 
+glm::vec3 Line::getPosition1() const{
+
+	glm::vec4 position1 = glm::vec4(_position1, 1.0f);
+
+	return glm::vec3(_matrixModel* position1);
+	
+}
+
+glm::vec3 Line::getPosition2() const{
+
+	glm::vec4 position2 = glm::vec4(_position2, 1.0f);
+
+	return glm::vec3(_matrixModel * position2);
+
+}
+
 glm::vec3 Line::getVectorTranslation() const{
 	return _vectorTranslation;
 }
 
 glm::vec3 Line::getVectorRotation() const{
-	return _vectorTranslation;
+	return _vectorRotation;
 }
 
 glm::vec3 Line::getVectorScale() const{
-	return _vectorTranslation;
+	return _vectorScale;
 }
 
 glm::mat4 Line::getMatrixTranslation() const{
