@@ -43,16 +43,16 @@ glm::mat4 ortho = glm::ortho(left, right, bottom, top, near, far);
 
 GLfloat starVertexGlobal[] = {
     // X       Y       Z     R     G     B 
-    21.18f,    5.0f,  0.0f, 1.0f, 0.0f, 0.0f, // Ponto F 
-    13.09f,  -19.9f,  0.0f, 0.0f, 1.0f, 0.0f, // Ponto G 
-   -13.09f,  -19.9f,  0.0f, 0.0f, 0.0f, 1.0f, // Ponto H 
-   -21.18f,    5.0f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto I 
-     0.0f,   20.39f,  0.0f, 0.0f, 1.0f, 1.0f, // Ponto J 
-    -5.0f,     5.0f,  0.0f, 0.5f, 0.5f, 0.0f, // Ponto F (Interseção) 
-     5.0f,     5.0f,  0.0f, 0.5f, 0.0f, 0.5f, // Ponto G (Interseção) 
-     8.09f,  -4.51f,  0.0f, 0.0f, 0.5f, 0.5f, // Ponto H (Interseção) 
-     0.0f,  -10.39f,  0.0f, 0.5f, 0.5f, 0.5f, // Ponto I (Interseção) 
-    -8.09f,  -4.51f,  0.0f, 1.0f, 0.5f, 0.0f  // Ponto J (Interseção) 
+    21.18f,    5.0f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto F 
+    13.09f,  -19.9f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto G 
+   -13.09f,  -19.9f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto H 
+   -21.18f,    5.0f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto I 
+     0.0f,   20.39f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto J 
+    -5.0f,     5.0f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto F (Interseção) 
+     5.0f,     5.0f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto G (Interseção) 
+     8.09f,  -4.51f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto H (Interseção) 
+     0.0f,  -10.39f,  0.0f, 1.0f, 0.0f, 0.5f, // Ponto I (Interseção) 
+    -8.09f,  -4.51f,  0.0f, 1.0f, 0.0f, 0.5f  // Ponto J (Interseção) 
 };
 
 int main(){
@@ -68,6 +68,18 @@ int main(){
     GLboolean jumpScene = true;
     GLboolean spinRightScene = false;
     GLboolean dismantleScene = false;
+    GLboolean goldenRuleScene = false;
+    GLboolean reassembleScene = false;
+
+    // Variaveis goldenRuleScene
+
+    GLboolean passosGoldenRule[8] = { true, false, false, false, false, false, false, false };
+
+    Line line1GoldenRule;
+
+    GLfloat positionXLinha2;
+
+    //
 
     GLint jumps = 1;
     GLfloat speedY = 0.01f;
@@ -82,11 +94,11 @@ int main(){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Animação de Pulo
 
         if(jumpScene){
 
-            for(int i = 0; i < 15; i++) {
-
+            for(int i = 0; i < 15; i++){
                 starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
                 shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
                 starLines[i].draw();
@@ -112,6 +124,7 @@ int main(){
             }
 
         }
+		// Animação girando e transladando para a direita
 
         if(spinRightScene){
 
@@ -125,13 +138,15 @@ int main(){
 
             }
 
-            if(fabs(starLines[0].getVectorRotation().z + 90.0f) < EPSILON){
+            if (fabs(starLines[0].getVectorRotation().z + 90.0f) < EPSILON) {
                 spinRightScene = false;
                 dismantleScene = true;
             }
         }
 
-        if(dismantleScene){
+        // Animação de desmontagem estrela
+
+        if (dismantleScene) {
 
             for (int i = 0; i < 15; i++) {
 
@@ -139,21 +154,125 @@ int main(){
                     (i == 5 && starLines[14].getVectorRotation().z < 54.0f) ||
                     (i == 6 && starLines[14].getVectorRotation().z < 126.0f) ||
                     (i >= 7)
-                    ){
+                    ) {
 
                     starLines[i].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), center);
                     starLines[i].translate(glm::vec3(-speedX, 0.0f, 0.0f));
 
                 }
 
-				if(i == 6 && starLines[14].getVectorRotation().z >= 180.0f && starLines[6].getVectorTranslation().y ) {
-                    starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
-				}
+                if (i == 6 && starLines[14].getVectorRotation().z >= 180.0f && starLines[6].getPosition2().y >= starLines[0].getPosition2().y) {
+                    starLines[i].translate(glm::vec3(0.0f, -speedY, 0.0f));
+                }
+
+                if (starLines[14].getVectorRotation().z >= 220.0f) {
+
+                    line1GoldenRule = Line(starLines[6].getPosition1(),
+                        starLines[6].getPosition2(),
+                        glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
+                        glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+                    dismantleScene = false;
+                    goldenRuleScene = true;
+                }
 
                 shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
                 starLines[i].draw();
             }
 
+        }
+
+        // Animação da regra de ouro
+
+        if (goldenRuleScene) {
+
+            if (passosGoldenRule[0]) {
+
+                GLfloat speedX = fabs((starLines[5].getPosition2().x - starLines[6].getPosition2().x)) / 1500.0f;
+                GLfloat speedY = (starLines[5].getPosition2().y - starLines[6].getPosition2().y) / 1500.0f;
+
+                line1GoldenRule.translate(glm::vec3(speedX, speedY, 0.0f));
+
+                shader.SendUniformData("Matrix", ortho * line1GoldenRule.getMatrixModel());
+                line1GoldenRule.draw();
+
+                if (fabs(line1GoldenRule.getPosition2().x - starLines[5].getPosition2().x) < EPSILON) {
+
+                    passosGoldenRule[0] = false;
+                    passosGoldenRule[1] = true;
+
+                    positionXLinha2 = starLines[5].getPosition2().x;
+
+                    for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                        printf("");
+                    }
+
+                }
+
+            }
+
+            if (passosGoldenRule[1]) {
+
+                GLfloat speedX = fabs((starLines[5].getPosition2().x - starLines[4].getPosition2().x)) / 1500.0f;
+
+                line1GoldenRule.translate(glm::vec3(speedX, 0.0f, 0.0f));
+
+                shader.SendUniformData("Matrix", ortho * line1GoldenRule.getMatrixModel());
+                line1GoldenRule.draw();
+
+                starLines[5].translate(glm::vec3(speedX, 0.0f, 0.0f));
+
+                if (fabs(line1GoldenRule.getPosition2().x - starLines[4].getPosition2().x) < EPSILON + 0.5f) {
+
+                    passosGoldenRule[1] = false;
+                    passosGoldenRule[2] = true;
+
+                    for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                        printf("");
+                    }
+
+                }
+
+            }
+
+            if(passosGoldenRule[2]){
+
+                GLfloat speedX = fabs((starLines[5].getPosition2().x - positionXLinha2)) / 1500.0f;
+
+                line1GoldenRule.translate(glm::vec3(-speedX, 0.0f, 0.0f));
+
+                shader.SendUniformData("Matrix", ortho* line1GoldenRule.getMatrixModel());
+                line1GoldenRule.draw();
+
+                starLines[5].translate(glm::vec3(-speedX, 0.0f, 0.0f));
+
+                if (fabs(line1GoldenRule.getPosition2().x - positionXLinha2) < EPSILON + 0.01f) {
+
+                    passosGoldenRule[2] = false;
+                    passosGoldenRule[3] = true;
+
+                    for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                        printf("");
+                    }
+
+                }
+
+            }
+
+            if(passosGoldenRule[3]){
+
+
+            }
+ 
+
+        }
+
+        shader.SendUniformData("Matrix", ortho* line1GoldenRule.getMatrixModel());
+        line1GoldenRule.draw();
+
+        for (int i = 0; i < 7; i++) {
+            shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+            starLines[i].draw();
         }
 
         /* Swap front and back buffers */
@@ -166,6 +285,8 @@ int main(){
     glfwTerminate();
     return 0;
 }
+
+
 
 void initOpenGL(){
 
@@ -218,8 +339,8 @@ std::vector<Line> createStar(){
         starLines.emplace_back(
             glm::vec3(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]),
             glm::vec3(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]),
-            glm::vec3(starVertexGlobal[indiceLinha1 + 3], starVertexGlobal[indiceLinha1 + 4], starVertexGlobal[indiceLinha1 + 5]),
-            glm::vec3(starVertexGlobal[indiceLinha2 + 3], starVertexGlobal[indiceLinha2 + 4], starVertexGlobal[indiceLinha2 + 5])
+            glm::vec4(starVertexGlobal[indiceLinha1 + 3], starVertexGlobal[indiceLinha1 + 4], starVertexGlobal[indiceLinha1 + 5], 1.0f),
+            glm::vec4(starVertexGlobal[indiceLinha2 + 3], starVertexGlobal[indiceLinha2 + 4], starVertexGlobal[indiceLinha2 + 5], 1.0f)
         );
 
     }

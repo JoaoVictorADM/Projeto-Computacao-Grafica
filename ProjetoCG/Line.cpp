@@ -3,7 +3,9 @@
 #include<GL/glew.h>
 #include<gtc/matrix_transform.hpp>
 
-Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec3 color1, glm::vec3 color2) :
+Line::Line(){}
+
+Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color1, glm::vec4 color2) :
 	_vectorTranslation(glm::vec3(0.0f)),
 	_vectorRotation(glm::vec3(0.0f)),
 	_vectorScale(glm::vec3(0.0f)),
@@ -77,7 +79,7 @@ glm::vec3 Line::getPosition1() const{
 
 	glm::vec4 position1 = glm::vec4(_position1, 1.0f);
 
-	return glm::vec3(_matrixModel* position1);
+	return glm::vec3(_matrixModel * position1);
 	
 }
 
@@ -129,8 +131,8 @@ void Line::CreateBuffers(){
 void Line::FillBuffers(){
 
 	GLfloat vertices[] = {
-		_position1.x, _position1.y, _position1.z, _color1.x, _color1.y, _color1.z,
-		_position2.x, _position2.y, _position2.z, _color2.x, _color2.y, _color2.z
+		_position1.x, _position1.y, _position1.z, _color1.x, _color1.y, _color1.z, _color1.w,
+		_position2.x, _position2.y, _position2.z, _color2.x, _color2.y, _color2.z, _color2.w
 	};
 
     glBindBuffer(GL_ARRAY_BUFFER, _VBO);
@@ -146,10 +148,10 @@ void Line::LinkBuffers(){
 		glBindBuffer(GL_ARRAY_BUFFER, _VBO);
 
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, 0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 7, 0);
 		
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (GLvoid*)(sizeof(GLfloat) * 3));
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 7, (GLvoid*)(sizeof(GLfloat) * 3));
 	}
 
 	glBindVertexArray(_VAO);

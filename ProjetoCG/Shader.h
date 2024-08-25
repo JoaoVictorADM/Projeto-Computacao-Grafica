@@ -8,8 +8,6 @@ class Shader
 public:
 	Shader(const std::string vertFilePath, const std::string fragFilePath);
 
-	~Shader();
-
 	void CreateShaders();
 
 	void Bind() const;

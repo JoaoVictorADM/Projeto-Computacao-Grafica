@@ -15,10 +15,6 @@ Shader::Shader(const std::string vertFilePath, const std::string fragFilePath) :
 {
 }
 
-Shader::~Shader(){
-	glDeleteProgram(_programId);
-}
-
 void Shader::Bind() const{
 	glUseProgram(_programId);
 }
