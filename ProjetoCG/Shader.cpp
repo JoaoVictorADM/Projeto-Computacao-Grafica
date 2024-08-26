@@ -6,6 +6,11 @@
 #include "Shader.h"
 #include "Error.h"
 
+Shader::Shader()
+
+{
+}
+
 Shader::Shader(const std::string vertFilePath, const std::string fragFilePath) :
 	_programId(0),
 	_vertexShaderId(0),
