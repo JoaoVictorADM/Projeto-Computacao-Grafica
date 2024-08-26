@@ -55,6 +55,24 @@ GLfloat starVertexGlobal[] = {
     -8.09f,  -4.51f,  0.0f, 1.0f, 0.0f, 0.5f  // Ponto J (Interseção) 
 };
 
+GLuint indexVertexStar[] = {
+        6, 0,
+        5, 6,
+        3, 5,
+        6, 7,
+        7, 1,
+        2, 8,
+        8, 9,
+        2, 9,
+        9, 3,
+        9, 5,
+        5, 4,
+        4, 6,
+        0, 7,
+        7, 8,
+        1, 8
+};
+
 int main(){
 
     initOpenGL();
@@ -76,8 +94,10 @@ int main(){
     GLboolean passosGoldenRule[8] = { true, false, false, false, false, false, false, false };
 
     Line line1GoldenRule;
+    Line line2GoldenRule;
 
     GLfloat positionXLinha2;
+    GLfloat positionXLinha3;
 
     //
 
@@ -202,6 +222,7 @@ int main(){
                     passosGoldenRule[1] = true;
 
                     positionXLinha2 = starLines[5].getPosition2().x;
+					positionXLinha3 = starLines[4].getPosition2().x;
 
                     for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
                         printf("");
@@ -251,7 +272,7 @@ int main(){
                     passosGoldenRule[2] = false;
                     passosGoldenRule[3] = true;
 
-                    for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                    for (float i = 0.0f; i < 100.0f; i += 0.001f) {
                         printf("");
                     }
 
@@ -261,19 +282,168 @@ int main(){
 
             if(passosGoldenRule[3]){
 
+				passosGoldenRule[3] = false;
+				passosGoldenRule[4] = true;
+
+                line2GoldenRule = Line(starLines[5].getPosition1(),
+                    starLines[5].getPosition2(),
+                    glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
+                    glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+                for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                    printf("");
+                }
 
             }
- 
+
+            if(passosGoldenRule[4]){
+
+                GLfloat speedX = fabs((starLines[5].getPosition2().x - starLines[4].getPosition2().x)) / 2500.0f;
+                GLfloat speedY = (starLines[3].getPosition1().y - starLines[4].getPosition2().y) / 2500.0f;
+
+                line2GoldenRule.translate(glm::vec3(speedX, speedY, 0.0f));
+
+                shader.SendUniformData("Matrix", ortho* line2GoldenRule.getMatrixModel());
+                line2GoldenRule.draw();
+
+                if (fabs(line2GoldenRule.getPosition2().x - starLines[4].getPosition2().x) < EPSILON) {
+
+                    passosGoldenRule[4] = false;
+                    passosGoldenRule[5] = true;
+
+                    positionXLinha3 = starLines[4].getPosition2().x;
+
+                    for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                        printf("");
+                    }
+
+                }
+
+            }
+
+			if (passosGoldenRule[5]) {
+
+				GLfloat speedX = fabs((starLines[4].getPosition2().x - starLines[0].getPosition1().x)) / 1500.0f;
+
+				line2GoldenRule.translate(glm::vec3(speedX, 0.0f, 0.0f));
+
+				shader.SendUniformData("Matrix", ortho* line2GoldenRule.getMatrixModel());
+				line2GoldenRule.draw();
+
+                starLines[3].translate(glm::vec3(speedX, 0.0f, 0.0f));
+				starLines[4].translate(glm::vec3(speedX, 0.0f, 0.0f));
+
+                if (fabs(line2GoldenRule.getPosition2().x - starLines[0].getPosition1().x) < EPSILON + 0.5f) {
+
+					passosGoldenRule[5] = false;
+					passosGoldenRule[6] = true;
+
+                    for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+						printf("");
+					}
+
+				}
+
+			} 
+
+			if(passosGoldenRule[6]){
+            
+                GLfloat speedX = fabs((starLines[4].getPosition2().x - positionXLinha3)) / 1500.0f;
+
+                line2GoldenRule.translate(glm::vec3(-speedX, 0.0f, 0.0f));
+
+                shader.SendUniformData("Matrix", ortho* line2GoldenRule.getMatrixModel());
+                line2GoldenRule.draw();
+
+                starLines[3].translate(glm::vec3(-speedX, 0.0f, 0.0f));
+                starLines[4].translate(glm::vec3(-speedX, 0.0f, 0.0f));
+
+                if (fabs(line2GoldenRule.getPosition2().x - positionXLinha3) < EPSILON + 0.01f) {
+
+                    passosGoldenRule[6] = false;
+                    passosGoldenRule[7] = true;
+
+                    for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                        printf("");
+                    }
+
+                }
+            
+            }
+
+			if (passosGoldenRule[7]) {
+
+				passosGoldenRule[7] = false;
+				reassembleScene = true;
+
+                for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+                    printf("");
+                }
+
+			}
+
+            for (int i = 0; i < 7; i++) {
+                shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+                starLines[i].draw();
+            }
 
         }
 
-        shader.SendUniformData("Matrix", ortho* line1GoldenRule.getMatrixModel());
-        line1GoldenRule.draw();
+        if (reassembleScene) {
+            
+            GLfloat speedReassemble = 0.01f;
 
-        for (int i = 0; i < 7; i++) {
-            shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
-            starLines[i].draw();
+            // Montar as linhas restantes do pentagrama
+            for (int i = 0; i < 15; i++) {
+                GLuint indiceLinha1 = indexVertexStar[i * 2] * 6;
+                GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 6;
+
+                glm::vec3 targetPos1(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]);
+                glm::vec3 targetPos2(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]);
+
+                glm::vec3 currentPos1 = starLines[i].getPosition1();
+                glm::vec3 currentPos2 = starLines[i].getPosition2();
+
+                glm::vec3 direction1 = glm::normalize(targetPos1 - currentPos1);
+                glm::vec3 direction2 = glm::normalize(targetPos2 - currentPos2);
+
+                glm::vec3 newPos1 = currentPos1 + direction1 * speedReassemble;
+                glm::vec3 newPos2 = currentPos2 + direction2 * speedReassemble;
+
+                // Atualizar a posição da linha
+                starLines[i] = Line(newPos1, newPos2,
+                    glm::vec4(1.0f, 0.0f, 0.5f, 1.0f), // Cor1
+                    glm::vec4(1.0f, 0.0f, 0.5f, 1.0f)); // Cor2
+
+                shader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+                starLines[i].draw();
+            }
+
+            // Verificar se a montagem está completa
+            bool montageComplete = true;
+
+            for (int i = 7; i < 15; i++) {
+                GLuint indiceLinha1 = indexVertexStar[i * 2] * 6;
+                GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 6;
+
+                glm::vec3 targetPos1(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]);
+                glm::vec3 targetPos2(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]);
+
+                if (glm::distance(starLines[i].getPosition1(), targetPos1) > EPSILON ||
+                    glm::distance(starLines[i].getPosition2(), targetPos2) > EPSILON) {
+                    montageComplete = false;
+                    break;
+                }
+            }
+
+            if(montageComplete){
+                reassembleScene = false;
+                printf("Completou");
+            }
+
+
         }
+
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -310,24 +480,6 @@ void initOpenGL(){
 }
 
 std::vector<Line> createStar(){
-
-    GLuint indexVertexStar[] = {
-        6, 0,
-        5, 6,
-        3, 5,
-        6, 7,
-        7, 1,
-        2, 8,
-        8, 9,
-        2, 9,
-        9, 3,
-        9, 5,
-        5, 4,
-        4, 6,
-        0, 7,
-        7, 8,
-        1, 8
-    };
 
     std::vector<Line> starLines;
 
