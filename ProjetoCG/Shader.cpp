@@ -6,6 +6,11 @@
 #include "Shader.h"
 #include "Error.h"
 
+Shader::Shader()
+
+{
+}
+
 Shader::Shader(const std::string vertFilePath, const std::string fragFilePath) :
 	_programId(0),
 	_vertexShaderId(0),
@@ -13,10 +18,6 @@ Shader::Shader(const std::string vertFilePath, const std::string fragFilePath) :
 	_vertFilePath(vertFilePath),
 	_fragFilePath(fragFilePath)
 {
-}
-
-Shader::~Shader(){
-	glDeleteProgram(_programId);
 }
 
 void Shader::Bind() const{

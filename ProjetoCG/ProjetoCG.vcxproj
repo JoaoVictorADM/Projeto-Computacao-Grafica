@@ -102,15 +102,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)includes\glew-2.1.0\include;$(SolutionDir)includes\glfw-3.4.bin.WIN64\include;$(SolutionDir)includes\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)includes\glew-2.1.0\include;$(SolutionDir)includes\glfw-3.4.bin.WIN64\include;$(SolutionDir)includes\glm;$(SolutionDir)includes\SOIL2\SOIL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)includes\glew-2.1.0\lib\Release\x64;$(SolutionDir)includes\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)includes\glew-2.1.0\lib\Release\x64;$(SolutionDir)includes\glfw-3.4.bin.WIN64\lib-vc2022;$(SolutionDir)includes\SOIL2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,6 +139,8 @@
     <None Include="Error.h" />
     <None Include="Main.frag" />
     <None Include="Main.vert" />
+    <None Include="Texture.frag" />
+    <None Include="Texture.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Line.h" />

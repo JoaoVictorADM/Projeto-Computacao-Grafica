@@ -41,6 +41,12 @@
     <None Include="Main.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Texture.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Texture.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">

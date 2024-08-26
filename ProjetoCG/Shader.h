@@ -6,9 +6,10 @@
 class Shader
 {
 public:
-	Shader(const std::string vertFilePath, const std::string fragFilePath);
 
-	~Shader();
+	Shader();
+
+	Shader(const std::string vertFilePath, const std::string fragFilePath);
 
 	void CreateShaders();
 
