@@ -11,7 +11,7 @@ class Line{
 
 		Line();
 
-		Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color1, glm::vec4 color2);
+		Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color);
 
 		void draw();
 
@@ -29,6 +29,9 @@ class Line{
 		glm::vec3 getPosition1() const;
 		glm::vec3 getPosition2() const;
 
+		glm::vec4 getColor() const;
+		void setColor(glm::vec4 color);
+
 		glm::vec3 getVectorTranslation() const;
 		glm::vec3 getVectorRotation() const;
 		glm::vec3 getVectorScale() const;
@@ -43,8 +46,7 @@ class Line{
 
 	private: 
 
-		glm::vec4 _color1;
-		glm::vec4 _color2;
+		glm::vec4 _color;
 
 		glm::vec3 _vectorTranslation;
 		glm::vec3 _vectorRotation;
