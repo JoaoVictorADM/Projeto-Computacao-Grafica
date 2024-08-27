@@ -1,11 +1,8 @@
 #include "Line.h"
 
-#include<GL/glew.h>
-#include<gtc/matrix_transform.hpp>
-
 Line::Line(){}
 
-Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color1, glm::vec4 color2) :
+Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color) :
 	_vectorTranslation(glm::vec3(0.0f)),
 	_vectorRotation(glm::vec3(0.0f)),
 	_vectorScale(glm::vec3(0.0f)),
@@ -18,8 +15,7 @@ Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color1, glm::vec4
 {
 	_position1 = position1;
 	_position2 = position2;
-	_color1 = color1;
-	_color2 = color2;
+	_color = color;
 
 	CreateBuffers();
 	FillBuffers();
@@ -31,6 +27,8 @@ void Line::draw(){
 	glBindVertexArray(_VAO);
 	
 	{
+		objectShader.SendUniformData("colorOut", _color);
+		objectShader.SendUniformData("Matrix", ortho * _matrixModel);
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 
@@ -91,6 +89,14 @@ glm::vec3 Line::getPosition2() const{
 
 }
 
+glm::vec4 Line::getColor() const{
+	return _color;
+}
+
+void Line::setColor(glm::vec4 color){
+	_color = color;
+}
+
 glm::vec3 Line::getVectorTranslation() const{
 	return _vectorTranslation;
 }
@@ -131,8 +137,8 @@ void Line::CreateBuffers(){
 void Line::FillBuffers(){
 
 	GLfloat vertices[] = {
-		_position1.x, _position1.y, _position1.z, _color1.x, _color1.y, _color1.z, _color1.w,
-		_position2.x, _position2.y, _position2.z, _color2.x, _color2.y, _color2.z, _color2.w
+		_position1.x, _position1.y, _position1.z,
+		_position2.x, _position2.y, _position2.z
 	};
 
     glBindBuffer(GL_ARRAY_BUFFER, _VBO);
@@ -148,10 +154,8 @@ void Line::LinkBuffers(){
 		glBindBuffer(GL_ARRAY_BUFFER, _VBO);
 
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 7, 0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, 0);
 		
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 7, (GLvoid*)(sizeof(GLfloat) * 3));
 	}
 
 	glBindVertexArray(_VAO);

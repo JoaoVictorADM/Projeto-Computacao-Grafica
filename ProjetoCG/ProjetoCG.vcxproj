@@ -131,6 +131,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Error.cpp" />
+    <ClCompile Include="globals.cpp" />
     <ClCompile Include="Line.cpp" />
     <ClCompile Include="ProjetoCG.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -143,6 +144,7 @@
     <None Include="Texture.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="globals.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>

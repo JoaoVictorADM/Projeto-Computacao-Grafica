@@ -30,6 +30,9 @@
     <ClCompile Include="Line.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Error.h">
@@ -54,6 +57,9 @@
     </ClInclude>
     <ClInclude Include="Line.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="globals.h">
+      <Filter>Shaders</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

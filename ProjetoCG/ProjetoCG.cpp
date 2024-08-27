@@ -23,15 +23,16 @@
 #include "Error.h"
 #include "Shader.h"
 #include "Line.h"
+#include "globals.h"
 
 /* Functions */
 
 void initOpenGL();
 std::vector<Line> createStar();
-glm::vec3 calculateCenter(GLfloat* vertexVector);
+glm::vec3 calculateCenter(GLfloat *vertexVector);
 void drawBackground(glm::mat4 model);
 void configTexture();
-void updateTexture(const char* imagePath);
+void updateTexture(const char *imagePath);
 
 void jumpScene();
 void spinRightScene();
@@ -46,6 +47,8 @@ void goldenRuleSceneStep6(Line& line);
 void goldenRuleSceneStep7(Line& line, GLfloat positionXLinha3);
 void goldenRuleSceneStep8(Line& line);
 void reassembleScene();
+void starToTriangle();
+void desenhaVertices();
 
 /* Infos Window */
 
@@ -59,27 +62,25 @@ GLfloat left = -80.0f;
 GLfloat right = 80.0f;
 GLfloat bottom = -80.0f;
 GLfloat top = 80.0f;
-GLfloat near = -1.0f;
-GLfloat far = 1.0f;
-
-glm::mat4 ortho = glm::ortho(left, right, bottom, top, near, far);
+GLfloat near = -80.0f;
+GLfloat far = 80.0f;
 
 /* for float comparison */
 
 const float EPSILON = 0.01f;
 
 GLfloat starVertexGlobal[] = {
-    // X       Y       Z     R     G     B 
-    21.18f,    5.0f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto F 
-    13.09f,  -19.9f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto G 
-   -13.09f,  -19.9f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto H 
-   -21.18f,    5.0f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto I 
-     0.0f,   20.39f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto J 
-    -5.0f,     5.0f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto F (Interseção) 
-     5.0f,     5.0f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto G (Interseção) 
-     8.09f,  -4.51f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto H (Interseção) 
-     0.0f,  -10.39f,  0.0f, 1.0f, 1.0f, 0.0f, // Ponto I (Interseção) 
-    -8.09f,  -4.51f,  0.0f, 1.0f, 1.0f, 0.0f  // Ponto J (Interseção) 
+    // X       Y       Z    
+    21.18f,    5.0f,  2.0f,  // Ponto F 
+    13.09f,  -19.9f,  2.0f,  // Ponto G 
+   -13.09f,  -19.9f,  2.0f,  // Ponto H 
+   -21.18f,    5.0f,  2.0f,  // Ponto I 
+     0.0f,   20.39f,  2.0f,  // Ponto J 
+    -5.0f,     5.0f,  2.0f,  // Ponto F (Interseção) 
+     5.0f,     5.0f,  2.0f,  // Ponto G (Interseção) 
+     8.09f,  -4.51f,  2.0f,  // Ponto H (Interseção) 
+     0.0f,  -10.39f,  2.0f,  // Ponto I (Interseção) 
+    -8.09f,  -4.51f,  2.0f,  // Ponto J (Interseção) 
 };
 
 GLuint indexVertexStar[] = {
@@ -100,9 +101,6 @@ GLuint indexVertexStar[] = {
         1, 8
 };
 
-Shader objectShader;
-Shader texShader;
-
 std::vector<Line> starLines;
 glm::vec3 centerStar;
 
@@ -110,6 +108,8 @@ GLuint texture;
 GLuint VAOback, VBOback, EBOback;
 
 int main(){
+
+    ortho = glm::ortho(left, right, bottom, top, near, far);
 
     initOpenGL();
 
@@ -129,13 +129,17 @@ int main(){
 
     /*        */
 
+    glLineWidth(3.0f);
+
     jumpScene();
     spinRightScene();
     dismantleScene();
-	updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\imagem1.jpg");
+	//updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\imagem1.jpg");
     goldenRuleScene();
     reassembleScene();
     jumpScene();
+    starToTriangle();
+    desenhaVertices();
 
     glfwTerminate();
     return 0;
@@ -160,6 +164,10 @@ void initOpenGL(){
         fatalError("Error loading GLEW extensions!");
 
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 }
 
@@ -249,14 +257,13 @@ std::vector<Line> createStar(){
 
     for(int i = 0; i < 15; i++){
 
-        GLuint indiceLinha1 = indexVertexStar[i * 2] * 6;
-        GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 6;
+        GLuint indiceLinha1 = indexVertexStar[i * 2] * 3;
+        GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 3;
 
         starLines.emplace_back(
             glm::vec3(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]),
             glm::vec3(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]),
-            glm::vec4(starVertexGlobal[indiceLinha1 + 3], starVertexGlobal[indiceLinha1 + 4], starVertexGlobal[indiceLinha1 + 5], 1.0f),
-            glm::vec4(starVertexGlobal[indiceLinha2 + 3], starVertexGlobal[indiceLinha2 + 4], starVertexGlobal[indiceLinha2 + 5], 1.0f)
+            glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)
         );
 
     }
@@ -283,7 +290,7 @@ glm::vec3 calculateCenter(GLfloat* vertexVector){
     size_t numVertices = 10;
 
     for(size_t i = 0; i < numVertices; ++i){
-        center += glm::vec3(vertexVector[i * 6], vertexVector[i * 6 + 1], vertexVector[i * 6 + 2]);
+        center += glm::vec3(vertexVector[i * 3], vertexVector[i * 3 + 1], vertexVector[i * 3 + 2]);
     }
 
     center /= static_cast<float>(numVertices);
@@ -293,7 +300,7 @@ glm::vec3 calculateCenter(GLfloat* vertexVector){
 
 void jumpScene(){
 
-    GLuint jumps = 1;
+    GLuint jumps = 2;
 
 	GLfloat speedY = 0.01f;
 
@@ -301,11 +308,10 @@ void jumpScene(){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        
+        drawBackground(glm::mat4(1.0f));
 
         for(int i = 0; i < 15; i++){
             starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
             starLines[i].draw();
 
         }
@@ -326,8 +332,6 @@ void jumpScene(){
 
         }
 
-        drawBackground(glm::mat4(1.0f));
-
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -336,27 +340,25 @@ void jumpScene(){
 
 void spinRightScene(){
 
-    GLfloat speedX = 0.005f;
-    GLfloat speedAngle = 0.01f;
+    GLfloat speedX = 0.01f;
+    GLfloat speedAngle = 0.02f;
 
     while(true){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        drawBackground(glm::mat4(1.0f));
+
         for(int i = 0; i < 15; i++){
 
             starLines[i].rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
             starLines[i].translate(glm::vec3(speedX, 0.0f, 0.0f));
-
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
             starLines[i].draw();
 
         }
 
         if(fabs(starLines[0].getVectorRotation().z + 90.0f) < EPSILON)
             break;
-
-        drawBackground(glm::mat4(1.0f));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -366,13 +368,15 @@ void spinRightScene(){
 
 void dismantleScene(){
 
-    GLfloat speedX = 0.005f;
-    GLfloat speedY = 0.01f;
-    GLfloat speedAngle = 0.01f;
+    GLfloat speedX = 0.01f;
+    GLfloat speedY = 0.02f;
+    GLfloat speedAngle = 0.02f;
 
     while(true){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
 
         if(dismantleScene){
 
@@ -396,14 +400,10 @@ void dismantleScene(){
                 if(starLines[14].getVectorRotation().z >= 220.0f)
                     return;
                 
-
-                objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
                 starLines[i].draw();
             }
 
         }
-
-        drawBackground(glm::mat4(1.0f));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -419,12 +419,11 @@ void goldenRuleScene(){
 
     Line line1 = Line(starLines[6].getPosition1(),
                  starLines[6].getPosition2(),
-                 glm::vec4(1.0f, 0.65f, 0.0f, 1.0f),
                  glm::vec4(1.0f, 0.65f, 0.0f, 1.0f));
+                 
 
     Line line2 = Line(starLines[5].getPosition1(),
                  starLines[5].getPosition2(),
-                 glm::vec4(1.0f, 0.65f, 0.0f, 1.0f),
                  glm::vec4(1.0f, 0.65f, 0.0f, 1.0f));
 
     goldenRuleSceneStep1(line1);
@@ -445,12 +444,13 @@ void goldenRuleSceneStep1(Line& line){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        drawBackground(glm::mat4(1.0f));
+
         GLfloat speedX = fabs((starLines[5].getPosition2().x - starLines[6].getPosition2().x)) / 1500.0f;
         GLfloat speedY = (starLines[5].getPosition2().y - starLines[6].getPosition2().y) / 1500.0f;
 
         line.translate(glm::vec3(speedX, speedY, 0.0f));
 
-        objectShader.SendUniformData("Matrix", ortho * line.getMatrixModel());
         line.draw();
 
         if(fabs(line.getPosition2().x - starLines[5].getPosition2().x) < EPSILON){
@@ -462,12 +462,9 @@ void goldenRuleSceneStep1(Line& line){
 
         }
 
-        for(int i = 0; i < 7; i++){
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+        for(int i = 0; i < 7; i++)
             starLines[i].draw();
-        }
-
-        drawBackground(glm::mat4(1.0f));
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -482,31 +479,28 @@ void goldenRuleSceneStep2(Line& line){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        drawBackground(glm::mat4(1.0f));
+
         GLfloat speedX = fabs((starLines[5].getPosition2().x - starLines[4].getPosition2().x)) / 1500.0f;
 
         line.translate(glm::vec3(speedX, 0.0f, 0.0f));
 
-        objectShader.SendUniformData("Matrix", ortho * line.getMatrixModel());
         line.draw();
 
         starLines[5].translate(glm::vec3(speedX, 0.0f, 0.0f));
 
         if(fabs(line.getPosition2().x - starLines[4].getPosition2().x) < EPSILON + 0.5f){
 
-            for (float i = 0.0f; i < 1000.0f; i += 0.001f) {
+            for (float i = 0.0f; i < 1000.0f; i += 0.001f)
                 printf("");
-            }
 
             break;
 
         }
 
-        for(int i = 0; i < 7; i++){
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+        for(int i = 0; i < 7; i++)
             starLines[i].draw();
-        }
-
-        drawBackground(glm::mat4(1.0f));
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -521,11 +515,12 @@ void goldenRuleSceneStep3(Line& line, GLfloat positionXLinha2){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        drawBackground(glm::mat4(1.0f));
+
         GLfloat speedX = fabs((starLines[5].getPosition2().x - positionXLinha2)) / 1500.0f;
 
         line.translate(glm::vec3(-speedX, 0.0f, 0.0f));
 
-        objectShader.SendUniformData("Matrix", ortho * line.getMatrixModel());
         line.draw();
 
         starLines[5].translate(glm::vec3(-speedX, 0.0f, 0.0f));
@@ -539,12 +534,9 @@ void goldenRuleSceneStep3(Line& line, GLfloat positionXLinha2){
 
         }
 
-        for(int i = 0; i < 7; i++){
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+        for(int i = 0; i < 7; i++)
             starLines[i].draw();
-        }
-
-        drawBackground(glm::mat4(1.0f));
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -555,13 +547,30 @@ void goldenRuleSceneStep3(Line& line, GLfloat positionXLinha2){
 
 void goldenRuleSceneStep4(Line& line){
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glm::vec4 colorLine = line.getColor();
 
-    drawBackground(glm::mat4(1.0f));
+    while(true){
+        
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+        drawBackground(glm::mat4(1.0f));
 
+		colorLine.a -= 0.0003f;
+
+		if(colorLine.a <= 0.0f)
+			break;
+
+		line.setColor(colorLine);
+        line.draw();
+
+        for(int i = 0; i < 7; i++)
+            starLines[i].draw();
+        
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+        
 }
 
 void goldenRuleSceneStep5(Line& line){
@@ -569,13 +578,14 @@ void goldenRuleSceneStep5(Line& line){
     while(true){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        drawBackground(glm::mat4(1.0f));
 
         GLfloat speedX = fabs((starLines[5].getPosition2().x - starLines[4].getPosition2().x)) / 2500.0f;
-        GLfloat speedY = (starLines[3].getPosition1().y - starLines[4].getPosition2().y) / 2500.0f;
+        GLfloat speedY = (starLines[3].getPosition1().y - starLines[4].getPosition2().y + 0.04f) / 2500.0f;
 
         line.translate(glm::vec3(speedX, speedY, 0.0f));
 
-        objectShader.SendUniformData("Matrix", ortho * line.getMatrixModel());
         line.draw();
 
         if(fabs(line.getPosition2().x - starLines[4].getPosition2().x) < EPSILON){
@@ -587,12 +597,9 @@ void goldenRuleSceneStep5(Line& line){
 
         }
 
-        for(int i = 0; i < 7; i++){
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+        for(int i = 0; i < 7; i++)
             starLines[i].draw();
-        }
-
-        drawBackground(glm::mat4(1.0f));
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -607,11 +614,12 @@ void goldenRuleSceneStep6(Line& line){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        drawBackground(glm::mat4(1.0f));
+
         GLfloat speedX = fabs((starLines[4].getPosition2().x - starLines[0].getPosition1().x)) / 1500.0f;
 
         line.translate(glm::vec3(speedX, 0.0f, 0.0f));
 
-        objectShader.SendUniformData("Matrix", ortho * line.getMatrixModel());
         line.draw();
 
         starLines[3].translate(glm::vec3(speedX, 0.0f, 0.0f));
@@ -626,12 +634,9 @@ void goldenRuleSceneStep6(Line& line){
 
         }
 
-        for(int i = 0; i < 7; i++){
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+        for(int i = 0; i < 7; i++)
             starLines[i].draw();
-        }
-
-        drawBackground(glm::mat4(1.0f));
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -646,11 +651,12 @@ void goldenRuleSceneStep7(Line& line, GLfloat positionXLinha3){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        drawBackground(glm::mat4(1.0f));
+
         GLfloat speedX = fabs((starLines[4].getPosition2().x - positionXLinha3)) / 1500.0f;
 
         line.translate(glm::vec3(-speedX, 0.0f, 0.0f));
 
-        objectShader.SendUniformData("Matrix", ortho * line.getMatrixModel());
         line.draw();
 
         starLines[3].translate(glm::vec3(-speedX, 0.0f, 0.0f));
@@ -665,12 +671,9 @@ void goldenRuleSceneStep7(Line& line, GLfloat positionXLinha3){
 
         }
 
-        for(int i = 0; i < 7; i++){
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
+        for(int i = 0; i < 7; i++)
             starLines[i].draw();
-        }
-
-        drawBackground(glm::mat4(1.0f));
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -681,12 +684,29 @@ void goldenRuleSceneStep7(Line& line, GLfloat positionXLinha3){
 
 void goldenRuleSceneStep8(Line& line){
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::vec4 colorLine = line.getColor();
 
-    drawBackground(glm::mat4(1.0f));
+    while(true){
 
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        colorLine.a -= 0.0003f;
+
+        if (colorLine.a <= 0.0f)
+            break;
+
+        line.setColor(colorLine);
+        line.draw();
+
+        for (int i = 0; i < 7; i++)
+            starLines[i].draw();
+
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
 
 }
 
@@ -696,13 +716,15 @@ void reassembleScene(){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        drawBackground(glm::mat4(1.0f));
+
         GLfloat speedReassemble = 0.1f;
 
         // Montar as linhas restantes do pentagrama
         for(int i = 0; i < 15; i++){
 
-            GLuint indiceLinha1 = indexVertexStar[i * 2] * 6;
-            GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 6;
+            GLuint indiceLinha1 = indexVertexStar[i * 2] * 3;
+            GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 3;
 
             glm::vec3 targetPos1(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]);
             glm::vec3 targetPos2(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]);
@@ -718,10 +740,8 @@ void reassembleScene(){
 
             // Atualizar a posição da linha
             starLines[i] = Line(newPos1, newPos2,
-                glm::vec4(1.0f, 1.0f, 0.0f, 1.0f),
                 glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 
-            objectShader.SendUniformData("Matrix", ortho * starLines[i].getMatrixModel());
             starLines[i].draw();
         }
 
@@ -729,8 +749,8 @@ void reassembleScene(){
         bool montageComplete = true;
 
         for(int i = 0; i < 15; i++){
-            GLuint indiceLinha1 = indexVertexStar[i * 2] * 6;
-            GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 6;
+            GLuint indiceLinha1 = indexVertexStar[i * 2] * 3;
+            GLuint indiceLinha2 = indexVertexStar[i * 2 + 1] * 3;
 
             glm::vec3 targetPos1(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]);
             glm::vec3 targetPos2(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]);
@@ -742,12 +762,96 @@ void reassembleScene(){
             }
         }
 
-        if(montageComplete){
+        if(montageComplete)
             return;
-            printf("Completou");
-        }
+        
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+}
+
+void starToTriangle(){
+
+    GLfloat speedAngle = 0.02f;
+
+    Line duplicatedLineGreen = Line(starLines[13].getPosition1(), // Linha duplicada para desenhar triangulo da esquerda(verde, print no disc)
+                               starLines[13].getPosition2(),
+                               glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+
+    GLuint indexLinesGreen[] = {
+		3, 5, 7, 9, 10, 11
+    };
+
+    GLuint indexLinesBlue[] = {
+        4, 14
+    };
+
+	GLuint indexDuplicatedLinesBlue[] = {
+		3, 6, 9, 10, 11
+	};
+
+    std::vector<Line> duplicatedLinesBlue;
+
+    for(int i = 0; i < 5; i++){
+        duplicatedLinesBlue.emplace_back(
+            starLines[indexDuplicatedLinesBlue[i]].getPosition1(),
+            starLines[indexDuplicatedLinesBlue[i]].getPosition2(),
+            glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)
+        );
+    }
+
+    while(true){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawBackground(glm::mat4(1.0f));
+
+        for(int i = 0; i < 6; i++)
+			starLines[indexLinesGreen[i]].rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+        
+        duplicatedLineGreen.rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+		duplicatedLineGreen.draw();
+
+        for (int i = 0; i < 2; i++)
+            starLines[indexLinesBlue[i]].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+
+        for(int i = 0; i < 5; i++){
+
+			duplicatedLinesBlue[i].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+
+            duplicatedLinesBlue[i].draw();
+        }
+
+        for(int i = 0; i < 15; i++){
+            starLines[i].draw();
+
+            if(starLines[10].getVectorRotation().z + 71.9f < EPSILON){
+                return;
+            }      
+
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+}
+
+void desenhaVertices(){
+
+    GLuint index[] = {0, 1, 2, 6, 8, 12, 13};
+
+    while(true){
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for(int i = 0; i < 7; i++)
+			starLines[index[i]].draw();
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
