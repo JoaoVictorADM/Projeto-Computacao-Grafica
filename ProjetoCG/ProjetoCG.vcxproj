@@ -135,6 +135,7 @@
     <ClCompile Include="Line.cpp" />
     <ClCompile Include="ProjetoCG.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Error.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="globals.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Triangle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
