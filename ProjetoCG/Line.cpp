@@ -1,8 +1,5 @@
 #include "Line.h"
 
-#include<GL/glew.h>
-#include<gtc/matrix_transform.hpp>
-
 Line::Line(){}
 
 Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color1, glm::vec4 color2) :
@@ -31,6 +28,7 @@ void Line::draw(){
 	glBindVertexArray(_VAO);
 	
 	{
+		objectShader.SendUniformData("Matrix", ortho * _matrixModel);
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 

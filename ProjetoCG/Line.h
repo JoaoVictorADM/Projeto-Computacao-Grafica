@@ -1,6 +1,9 @@
 #pragma once
+
 #include <glm.hpp>
 #include <GL/glew.h>
+#include <gtc/matrix_transform.hpp>
+#include "globals.h"
 
 class Line{
 
