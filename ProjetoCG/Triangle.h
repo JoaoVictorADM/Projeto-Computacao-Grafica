@@ -28,6 +28,7 @@ public:
 
 	glm::vec3 getPosition1() const;
 	glm::vec3 getPosition2() const;
+	glm::vec3 getPosition3() const;
 
 	glm::vec4 getColor() const;
 	void setColor(glm::vec4 color);
