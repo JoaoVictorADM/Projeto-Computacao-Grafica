@@ -41,10 +41,10 @@ class Line{
 		glm::mat4 getMatrixScale() const;
 		glm::mat4 getMatrixModel() const;
 
+	private: 
+
 		glm::vec3 _position1;
 		glm::vec3 _position2;
-
-	private: 
 
 		glm::vec4 _color;
 

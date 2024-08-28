@@ -23,12 +23,14 @@
 #include "Error.h"
 #include "Shader.h"
 #include "Line.h"
+#include "Triangle.h"
 #include "globals.h"
 
 /* Functions */
 
 void initOpenGL();
-std::vector<Line> createStar();
+std::vector<Line> createStar(glm::vec4 color);
+std::vector<Triangle> createStarTriangles();
 glm::vec3 calculateCenter(GLfloat *vertexVector);
 void drawBackground(glm::mat4 model);
 void configTexture();
@@ -48,7 +50,9 @@ void goldenRuleSceneStep7(Line& line, GLfloat positionXLinha3);
 void goldenRuleSceneStep8(Line& line);
 void reassembleScene();
 void starToTriangle();
-void desenhaVertices();
+void colorTriangles(glm::vec4 colorTriangles);
+void openOrCloseTriangle(GLfloat angle);
+
 
 /* Infos Window */
 
@@ -71,20 +75,20 @@ const float EPSILON = 0.01f;
 
 GLfloat starVertexGlobal[] = {
     // X       Y       Z    
-    21.18f,    5.0f,  2.0f,  // Ponto F 
-    13.09f,  -19.9f,  2.0f,  // Ponto G 
-   -13.09f,  -19.9f,  2.0f,  // Ponto H 
-   -21.18f,    5.0f,  2.0f,  // Ponto I 
-     0.0f,   20.39f,  2.0f,  // Ponto J 
-    -5.0f,     5.0f,  2.0f,  // Ponto F (Interseção) 
-     5.0f,     5.0f,  2.0f,  // Ponto G (Interseção) 
-     8.09f,  -4.51f,  2.0f,  // Ponto H (Interseção) 
-     0.0f,  -10.39f,  2.0f,  // Ponto I (Interseção) 
-    -8.09f,  -4.51f,  2.0f,  // Ponto J (Interseção) 
+    21.18f,    5.0f,  2.0f,  // Ponto F 0
+    13.09f,  -19.9f,  2.0f,  // Ponto G 1
+   -13.09f,  -19.9f,  2.0f,  // Ponto H 2
+   -21.18f,    5.0f,  2.0f,  // Ponto I 3
+     0.0f,   20.39f,  2.0f,  // Ponto J 4
+    -5.0f,     5.0f,  2.0f,  // Ponto F (Interseção) 5
+     5.0f,     5.0f,  2.0f,  // Ponto G (Interseção) 6
+     8.09f,  -4.51f,  2.0f,  // Ponto H (Interseção) 7
+     0.0f,  -10.39f,  2.0f,  // Ponto I (Interseção) 8
+    -8.09f,  -4.51f,  2.0f,  // Ponto J (Interseção) 9
 };
 
 GLuint indexVertexStar[] = {
-        6, 0,
+        6, 0, 
         5, 6,
         3, 5,
         6, 7,
@@ -101,8 +105,21 @@ GLuint indexVertexStar[] = {
         1, 8
 };
 
+GLuint indexVextexStarTriangles[] = {
+    9, 6, 5,
+    9, 6, 7,
+    9, 8, 7,
+    9, 3, 5,
+    0, 6, 7,
+    4, 6, 5,
+    9, 8, 2,
+    1, 8, 7
+};
+
 std::vector<Line> starLines;
 glm::vec3 centerStar;
+
+std::vector<Triangle> starTriangles;
 
 GLuint texture;
 GLuint VAOback, VBOback, EBOback;
@@ -119,7 +136,7 @@ int main(){
     objectShader.CreateShaders();
 	texShader.CreateShaders();
 
-    starLines = createStar();
+    starLines = createStar(glm::vec4(1.0f, 0.8f, 0.7f, 1.0f));
     centerStar = calculateCenter(starVertexGlobal);
 
     /* Textura */
@@ -129,17 +146,21 @@ int main(){
 
     /*        */
 
+    printf("%f %f %f", centerStar.x, centerStar.y, centerStar.z);
+
     glLineWidth(3.0f);
 
     jumpScene();
     spinRightScene();
     dismantleScene();
-	//updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\imagem1.jpg");
     goldenRuleScene();
     reassembleScene();
+    updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background2.png");
     jumpScene();
     starToTriangle();
-    desenhaVertices();
+    colorTriangles(glm::vec4(1.0f, 0.41f, 0.70f, 0.0f));
+    openOrCloseTriangle(54.0f);
+    openOrCloseTriangle(-54.0f);
 
     glfwTerminate();
     return 0;
@@ -222,7 +243,7 @@ void configTexture() {
 
     // Carregar a imagem
     int width, height;
-    unsigned char* image = SOIL_load_image("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\teste2.png", &width, &height, 0, SOIL_LOAD_RGB);
+    unsigned char* image = SOIL_load_image("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background1.png", &width, &height, 0, SOIL_LOAD_RGB);
     if (image) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -251,7 +272,21 @@ void drawBackground(glm::mat4 model){
 
 }
 
-std::vector<Line> createStar(){
+void updateTexture(const char* imagePath) {
+    int width, height;
+    unsigned char* image = SOIL_load_image(imagePath, &width, &height, 0, SOIL_LOAD_RGB);
+    if (image) {
+        glBindTexture(GL_TEXTURE_2D, texture);  // Certifique-se de que o ID da textura está correto
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+        glGenerateMipmap(GL_TEXTURE_2D);  // Regenera os mipmaps para a nova textura
+        SOIL_free_image_data(image);  // Libere os dados da imagem
+    }
+    else
+        printf("Erro ao carregar a imagem: %s\n", imagePath);
+
+}
+
+std::vector<Line> createStar(glm::vec4 color){
 
     std::vector<Line> starLines;
 
@@ -263,7 +298,7 @@ std::vector<Line> createStar(){
         starLines.emplace_back(
             glm::vec3(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2]),
             glm::vec3(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2]),
-            glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)
+            color
         );
 
     }
@@ -271,17 +306,27 @@ std::vector<Line> createStar(){
     return starLines;
 }
 
-void updateTexture(const char* imagePath){
-    int width, height;
-    unsigned char* image = SOIL_load_image(imagePath, &width, &height, 0, SOIL_LOAD_RGB);
-    if(image){
-        glBindTexture(GL_TEXTURE_2D, texture);  // Certifique-se de que o ID da textura está correto
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-        glGenerateMipmap(GL_TEXTURE_2D);  // Regenera os mipmaps para a nova textura
-        SOIL_free_image_data(image);  // Libere os dados da imagem
-    } else
-        printf("Erro ao carregar a imagem: %s\n", imagePath);
-    
+std::vector<Triangle> createStarTriangles(){
+
+	std::vector<Triangle> starTriangles;
+
+	for(int i = 0; i < 8; i++){
+
+		GLuint indiceLinha1 = indexVextexStarTriangles[i * 3] * 3;
+		GLuint indiceLinha2 = indexVextexStarTriangles[i * 3 + 1] * 3;
+		GLuint indiceLinha3 = indexVextexStarTriangles[i * 3 + 2] * 3;
+
+		starTriangles.emplace_back(
+			glm::vec3(starVertexGlobal[indiceLinha1], starVertexGlobal[indiceLinha1 + 1], starVertexGlobal[indiceLinha1 + 2] - 1.0f),
+			glm::vec3(starVertexGlobal[indiceLinha2], starVertexGlobal[indiceLinha2 + 1], starVertexGlobal[indiceLinha2 + 2] - 1.0f),
+			glm::vec3(starVertexGlobal[indiceLinha3], starVertexGlobal[indiceLinha3 + 1], starVertexGlobal[indiceLinha3 + 2] - 1.0f),
+			glm::vec4(1.0f, 0.41f, 0.70f, 0.0f)
+		);
+
+	}
+
+	return starTriangles;
+
 }
 
 glm::vec3 calculateCenter(GLfloat* vertexVector){
@@ -391,6 +436,8 @@ void dismantleScene(){
                     starLines[i].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
                     starLines[i].translate(glm::vec3(-speedX, 0.0f, 0.0f));
 
+                } else {
+                    starLines[i].setColor(glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
                 }
 
                 if(i == 6 && starLines[14].getVectorRotation().z >= 180.0f && starLines[6].getPosition2().y >= starLines[0].getPosition2().y)
@@ -419,12 +466,12 @@ void goldenRuleScene(){
 
     Line line1 = Line(starLines[6].getPosition1(),
                  starLines[6].getPosition2(),
-                 glm::vec4(1.0f, 0.65f, 0.0f, 1.0f));
+                 glm::vec4(1.0f, 0.71f, 0.76f, 0.4f));
                  
 
     Line line2 = Line(starLines[5].getPosition1(),
                  starLines[5].getPosition2(),
-                 glm::vec4(1.0f, 0.65f, 0.0f, 1.0f));
+                 glm::vec4(1.0f, 0.71f, 0.76f, 0.4f));
 
     goldenRuleSceneStep1(line1);
     goldenRuleSceneStep2(line1);
@@ -740,7 +787,7 @@ void reassembleScene(){
 
             // Atualizar a posição da linha
             starLines[i] = Line(newPos1, newPos2,
-                glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+                glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
 
             starLines[i].draw();
         }
@@ -774,11 +821,13 @@ void reassembleScene(){
 
 void starToTriangle(){
 
+	starTriangles = createStarTriangles();
+
     GLfloat speedAngle = 0.02f;
 
     Line duplicatedLineGreen = Line(starLines[13].getPosition1(), // Linha duplicada para desenhar triangulo da esquerda(verde, print no disc)
                                starLines[13].getPosition2(),
-                               glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+                               glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
 
     GLuint indexLinesGreen[] = {
 		3, 5, 7, 9, 10, 11
@@ -798,7 +847,7 @@ void starToTriangle(){
         duplicatedLinesBlue.emplace_back(
             starLines[indexDuplicatedLinesBlue[i]].getPosition1(),
             starLines[indexDuplicatedLinesBlue[i]].getPosition2(),
-            glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)
+            glm::vec4(1.0f, 0.71f, 0.76f, 1.0f)
         );
     }
 
@@ -840,18 +889,92 @@ void starToTriangle(){
 
 }
 
-void desenhaVertices(){
+void colorTriangles(glm::vec4 colorTriangles){
 
-    GLuint index[] = {0, 1, 2, 6, 8, 12, 13};
+    for(int i = 0; i < 8; i++)
+        starTriangles[i].setColor(colorTriangles);
+    
+    GLuint indexLines[] = { 0, 1, 2, 6, 8, 12, 13 };
 
     while(true){
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawBackground(glm::mat4(1.0f));
 
+
+        for(int i = 0; i < 5; i++){
+
+            glm::vec4 triangleColor = starTriangles[i].getColor();
+
+            triangleColor.a += 0.0003f;
+
+            starTriangles[i].setColor(triangleColor);
+            starTriangles[i].draw();
+
+            if(triangleColor.a >= 1.0f)
+                return;
+
+        }
+
         for(int i = 0; i < 7; i++)
-			starLines[index[i]].draw();
+            starLines[indexLines[i]].draw();
         
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+}
+
+void openOrCloseTriangle(GLfloat angle){
+
+    GLuint indexLines[] = { 0, 1, 2, 6, 8, 12, 13 };
+    GLuint indexLinesMove[] = { 6, 8, 12, 13 };
+
+    GLuint steps = 1000;
+
+    GLfloat speedAngle = angle / steps;
+
+    for(int i = 0; i < steps; i++){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for (int i = 0; i < 5; i++)
+            starTriangles[i].draw();
+
+        for(int i = 0; i < 2; i++)
+            starLines[indexLinesMove[i]].rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), starLines[8].getPosition2());
+            
+
+        for(int i = 2; i < 4; i++)
+            starLines[indexLinesMove[i]].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), starLines[0].getPosition2());
+        
+            
+
+        for (int i = 0; i < 7; i++)
+            starLines[indexLines[i]].draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+}
+
+void goldenRectangleScene(){
+
+	Line line = Line(starLines[6].getPosition1(),
+		        starLines[13].getPosition2(),
+        glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+    while(true){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
 
         glfwSwapBuffers(window);
         glfwPollEvents();

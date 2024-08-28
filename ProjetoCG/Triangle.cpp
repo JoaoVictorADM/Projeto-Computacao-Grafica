@@ -71,6 +71,7 @@ void Triangle::printarPontos() {
 
 	printf("Ponto 1: (%f, %f, %f)\n", _position1.x, _position1.y, _position1.z);
 	printf("Ponto 2: (%f, %f, %f)\n\n", _position2.x, _position2.y, _position2.z);
+	printf("Ponto 3: (%f, %f, %f)\n\n", _position3.x, _position3.y, _position3.z);
 
 }
 
@@ -87,6 +88,14 @@ glm::vec3 Triangle::getPosition2() const {
 	glm::vec4 position2 = glm::vec4(_position2, 1.0f);
 
 	return glm::vec3(_matrixModel * position2);
+
+}
+
+glm::vec3 Triangle::getPosition3() const {
+
+	glm::vec4 position3 = glm::vec4(_position3, 1.0f);
+
+	return glm::vec3(_matrixModel * position3);
 
 }
 
@@ -139,7 +148,8 @@ void Triangle::FillBuffers() {
 
 	GLfloat vertices[] = {
 		_position1.x, _position1.y, _position1.z,
-		_position2.x, _position2.y, _position2.z
+		_position2.x, _position2.y, _position2.z,
+		_position3.x, _position3.y, _position3.z
 	};
 
 	glBindBuffer(GL_ARRAY_BUFFER, _VBO);
