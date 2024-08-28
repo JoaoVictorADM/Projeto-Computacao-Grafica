@@ -52,6 +52,9 @@ void reassembleScene();
 void starToTriangle();
 void colorTriangles(glm::vec4 colorTriangles);
 void openOrCloseTriangle(GLfloat angle);
+void goldenRectangleScene();
+void goldenRectangleSceneStep1(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint* indexLines);
+void goldenRectangleSceneStep2(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint* indexLines);
 
 
 /* Infos Window */
@@ -75,16 +78,16 @@ const float EPSILON = 0.01f;
 
 GLfloat starVertexGlobal[] = {
     // X       Y       Z    
-    21.18f,    5.0f,  2.0f,  // Ponto F 0
-    13.09f,  -19.9f,  2.0f,  // Ponto G 1
-   -13.09f,  -19.9f,  2.0f,  // Ponto H 2
-   -21.18f,    5.0f,  2.0f,  // Ponto I 3
-     0.0f,   20.39f,  2.0f,  // Ponto J 4
-    -5.0f,     5.0f,  2.0f,  // Ponto F (Interseção) 5
-     5.0f,     5.0f,  2.0f,  // Ponto G (Interseção) 6
-     8.09f,  -4.51f,  2.0f,  // Ponto H (Interseção) 7
-     0.0f,  -10.39f,  2.0f,  // Ponto I (Interseção) 8
-    -8.09f,  -4.51f,  2.0f,  // Ponto J (Interseção) 9
+    21.18f,    5.0f,  5.0f,  // Ponto F 0
+    13.09f,  -19.9f,  5.0f,  // Ponto G 1
+   -13.09f,  -19.9f,  5.0f,  // Ponto H 2
+   -21.18f,    5.0f,  5.0f,  // Ponto I 3
+     0.0f,   20.39f,  5.0f,  // Ponto J 4
+    -5.0f,     5.0f,  5.0f,  // Ponto F (Interseção) 5
+     5.0f,     5.0f,  5.0f,  // Ponto G (Interseção) 6
+     8.09f,  -4.51f,  5.0f,  // Ponto H (Interseção) 7
+     0.0f,  -10.39f,  5.0f,  // Ponto I (Interseção) 8
+    -8.09f,  -4.51f,  5.0f,  // Ponto J (Interseção) 9
 };
 
 GLuint indexVertexStar[] = {
@@ -143,24 +146,23 @@ int main(){
 
     configTexture();
 
-
     /*        */
-
-    printf("%f %f %f", centerStar.x, centerStar.y, centerStar.z);
 
     glLineWidth(3.0f);
 
-    jumpScene();
+    /*jumpScene();
     spinRightScene();
     dismantleScene();
     goldenRuleScene();
-    reassembleScene();
+    reassembleScene();*/
     updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background2.png");
-    jumpScene();
+    //jumpScene();
     starToTriangle();
     colorTriangles(glm::vec4(1.0f, 0.41f, 0.70f, 0.0f));
     openOrCloseTriangle(54.0f);
+    goldenRectangleScene();
     openOrCloseTriangle(-54.0f);
+	colorTriangles(glm::vec4(0.12f, 0.56f, 1.0f, 0.0f));
 
     glfwTerminate();
     return 0;
@@ -948,13 +950,11 @@ void openOrCloseTriangle(GLfloat angle){
 
         for(int i = 0; i < 2; i++)
             starLines[indexLinesMove[i]].rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), starLines[8].getPosition2());
-            
-
+           
         for(int i = 2; i < 4; i++)
             starLines[indexLinesMove[i]].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), starLines[0].getPosition2());
         
-            
-
+ 
         for (int i = 0; i < 7; i++)
             starLines[indexLines[i]].draw();
 
@@ -962,19 +962,195 @@ void openOrCloseTriangle(GLfloat angle){
         glfwPollEvents();
 
     }
+
 }
 
 void goldenRectangleScene(){
 
+    GLuint indexLines[] = { 0, 1, 2, 6, 8, 12, 13 };
+
+    for(int i = 0; i < 7; i++)
+        starLines[indexLines[i]].setColor(glm::vec4(1.0f, 0.8f, 0.7f, 1.0f));
+
 	Line line = Line(starLines[6].getPosition1(),
 		        starLines[13].getPosition2(),
-        glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+                glm::vec4(1.0f, 0.8f, 0.7f, 0.0f));
 
-    while(true){
+	glm::vec3 position1Triangle1 = starLines[8].getPosition2();
+	glm::vec3 position2Triangle1 = starLines[12].getPosition1();
+	glm::vec3 position3Triangle1 = starLines[6].getPosition1();
+
+	position1Triangle1.z -= 2.0f;
+	position2Triangle1.z -= 2.0f;
+	position3Triangle1.z -= 2.0f;
+
+	glm::vec3 position1Triangle2 = starLines[12].getPosition1();
+	glm::vec3 position2Triangle2 = starLines[6].getPosition1();
+	glm::vec3 position3Triangle2 = starLines[13].getPosition2();
+
+	position1Triangle2.z -= 2.0f;
+	position2Triangle2.z -= 2.0f;
+	position3Triangle2.z -= 2.0f;
+
+	Triangle triangle1 = Triangle(position1Triangle1,
+		                 position2Triangle1,
+		                 position3Triangle1,
+		                 glm::vec4(1.0f, 1.0f, 0.4f, 0.0f));
+
+    Triangle triangle2 = Triangle(position1Triangle2,
+                         position2Triangle2,
+                         position3Triangle2,
+                         glm::vec4(1.0f, 1.0f, 0.4f, 0.0f));
+
+	goldenRectangleSceneStep1(triangle1, triangle2, line, indexLines);
+    goldenRectangleSceneStep2(triangle1, triangle2, line, indexLines);
+
+}
+
+void goldenRectangleSceneStep1(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint *indexLines){
+
+    for(float i = 0; i < 1; i += 0.0001f) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawBackground(glm::mat4(1.0f));
+
+		glm::vec4 colorTriangle1 = triangle1.getColor();
+		colorTriangle1.a = i ;
+		triangle1.setColor(colorTriangle1);
+        triangle1.draw();
+
+        glm::vec4 colorTriangle2 = triangle2.getColor();
+        colorTriangle2.a = i;
+        triangle2.setColor(colorTriangle2);
+		triangle2.draw();
+
+		glm::vec4 colorLine = line.getColor();
+		colorLine.a = i;
+		line.setColor(colorLine);
+        line.draw();
+
+		for(int j = 0; j < 7; j++)
+			starLines[indexLines[j]].draw();
+
+        for(int j = 0; j < 5; j++){
+			glm::vec4 triangleColor = starTriangles[j].getColor();
+			triangleColor.a = 1.0f - i;
+			starTriangles[j].setColor(triangleColor);
+			starTriangles[j].draw();
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+}
+
+void goldenRectangleSceneStep2(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint* indexLines){
+
+    GLfloat alfaLimit = 1.0f;
+    
+	// preciso mover o alfa para 0 e subir para um 6 vezes, mas o alfa limit diminui em 0,2 a cada vez
+
+	for(int i = 0; i < 5; i++){
+
+		for(float j = alfaLimit; j >= 0.2f; j -= ((alfaLimit - 0.2) / 2500.0f)) {
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			drawBackground(glm::mat4(1.0f));
+
+			glm::vec4 colorTriangle1 = triangle1.getColor();
+			colorTriangle1.a = j;
+			triangle1.setColor(colorTriangle1);
+			triangle1.draw();
+
+			glm::vec4 colorTriangle2 = triangle2.getColor();
+			colorTriangle2.a = j;
+			triangle2.setColor(colorTriangle2);
+			triangle2.draw();
+
+			line.draw();
+
+			for (int k = 0; k < 7; k++)
+				starLines[indexLines[k]].draw();
+
+			glfwSwapBuffers(window);
+			glfwPollEvents();
+
+		}
+
+        alfaLimit -= 0.16f;
+
+        for(float j = 0.2f + EPSILON; j < alfaLimit; j += ((alfaLimit - 0.2) / 2500.0f)) {
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			drawBackground(glm::mat4(1.0f));
+
+			glm::vec4 colorTriangle1 = triangle1.getColor();
+			colorTriangle1.a = j;
+			triangle1.setColor(colorTriangle1);
+			triangle1.draw();
+
+			glm::vec4 colorTriangle2 = triangle2.getColor();
+			colorTriangle2.a = j;
+			triangle2.setColor(colorTriangle2);
+			triangle2.draw();
+
+			line.draw();
+
+			for(int k = 0; k < 7; k++)
+				starLines[indexLines[k]].draw();
+
+			glfwSwapBuffers(window);
+			glfwPollEvents();
+
+		}
+
+	}
+
+    GLfloat alfa = triangle1.getColor().a;
+
+    for(float i = alfa; i > 0.0f; i -= alfa / 5000.0f){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        glm::vec4 colorTriangle1 = triangle1.getColor();
+        colorTriangle1.a = i;
+        triangle1.setColor(colorTriangle1);
+        triangle1.draw();
+
+        glm::vec4 colorTriangle2 = triangle2.getColor();
+        colorTriangle2.a = i;
+        triangle2.setColor(colorTriangle2);
+        triangle2.draw();
+
+        line.draw();
+
+        for(int k = 0; k < 7; k++)
+            starLines[indexLines[k]].draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+    for(float i = line.getColor().a; i > 0.0f; i -= 1.0f / 1000.f){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        glm::vec4 lineColor = line.getColor();
+		lineColor.a = i;
+        line.setColor(lineColor);
+        line.draw();
+
+        for (int k = 0; k < 7; k++)
+            starLines[indexLines[k]].draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
