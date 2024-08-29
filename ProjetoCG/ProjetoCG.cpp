@@ -49,12 +49,14 @@ void goldenRuleSceneStep6(Line& line);
 void goldenRuleSceneStep7(Line& line, GLfloat positionXLinha3);
 void goldenRuleSceneStep8(Line& line);
 void reassembleScene();
-void starToTriangle();
+void starToTriangle1(GLfloat angle, GLfloat speedAngle);
+void starToTriangle2(GLfloat angle, GLfloat speedAngle);
 void colorTriangles(glm::vec4 colorTriangles);
 void openOrCloseTriangle(GLfloat angle);
 void goldenRectangleScene();
 void goldenRectangleSceneStep1(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint* indexLines);
 void goldenRectangleSceneStep2(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint* indexLines);
+void colorAllStar();
 
 
 /* Infos Window */
@@ -150,19 +152,21 @@ int main(){
 
     glLineWidth(3.0f);
 
-    /*jumpScene();
+    jumpScene();
     spinRightScene();
     dismantleScene();
     goldenRuleScene();
-    reassembleScene();*/
+    reassembleScene();
     updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background2.png");
-    //jumpScene();
-    starToTriangle();
+    jumpScene();
+    starToTriangle1(71.9f, 0.02);
     colorTriangles(glm::vec4(1.0f, 0.41f, 0.70f, 0.0f));
     openOrCloseTriangle(54.0f);
     goldenRectangleScene();
     openOrCloseTriangle(-54.0f);
 	colorTriangles(glm::vec4(0.12f, 0.56f, 1.0f, 0.0f));
+    starToTriangle2(0.0f, -0.02);
+    colorAllStar();
 
     glfwTerminate();
     return 0;
@@ -347,7 +351,7 @@ glm::vec3 calculateCenter(GLfloat* vertexVector){
 
 void jumpScene(){
 
-    GLuint jumps = 2;
+    GLuint jumps = 8;
 
 	GLfloat speedY = 0.01f;
 
@@ -821,11 +825,9 @@ void reassembleScene(){
 
 }
 
-void starToTriangle(){
+void starToTriangle1(GLfloat angle, GLfloat speedAngle){
 
 	starTriangles = createStarTriangles();
-
-    GLfloat speedAngle = 0.02f;
 
     Line duplicatedLineGreen = Line(starLines[13].getPosition1(), // Linha duplicada para desenhar triangulo da esquerda(verde, print no disc)
                                starLines[13].getPosition2(),
@@ -878,9 +880,82 @@ void starToTriangle(){
         for(int i = 0; i < 15; i++){
             starLines[i].draw();
 
-            if(starLines[10].getVectorRotation().z + 71.9f < EPSILON){
+            if(fabs(starLines[10].getVectorRotation().z + angle) < EPSILON){
                 return;
             }      
+
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+}
+
+void starToTriangle2(GLfloat angle, GLfloat speedAngle) {
+
+    for (int i = 0; i < 15; i++)
+        starLines[i].setColor(glm::vec4(0.53f, 0.80f, 1.0f, 1.0f));
+
+    Line duplicatedLineGreen = Line(starLines[6].getPosition1(), // Linha duplicada para desenhar triangulo da esquerda(verde, print no disc)
+        starLines[6].getPosition2(),
+        starLines[6].getColor());
+
+    GLuint indexLinesGreen[] = {
+        3, 5, 7, 9, 10, 11
+    };
+
+    GLuint indexLinesBlue[] = {
+        4, 14
+    };
+
+    GLuint indexDuplicatedLinesBlue[] = {
+        1, 2, 6, 8, 13 
+    };
+
+    std::vector<Line> duplicatedLinesBlue;
+
+    for (int i = 0; i < 5; i++) {
+        duplicatedLinesBlue.emplace_back(
+            starLines[indexDuplicatedLinesBlue[i]].getPosition1(),
+            starLines[indexDuplicatedLinesBlue[i]].getPosition2(),
+            starLines[indexDuplicatedLinesBlue[i]].getColor()
+        );
+    }
+
+    while(true){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for (int i = 0; i < 5; i++)
+            starTriangles[i].draw();
+        
+
+        for (int i = 0; i < 6; i++)
+            starLines[indexLinesGreen[i]].rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+
+        duplicatedLineGreen.rotate(-speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+        duplicatedLineGreen.draw();
+
+        for (int i = 0; i < 2; i++)
+            starLines[indexLinesBlue[i]].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+
+        for (int i = 0; i < 5; i++) {
+
+            duplicatedLinesBlue[i].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centerStar);
+
+            duplicatedLinesBlue[i].draw();
+        }
+
+        for (int i = 0; i < 15; i++) {
+            starLines[i].draw();
+
+            if (fabs(starLines[10].getVectorRotation().z + angle) < EPSILON) {
+                return;
+            }
 
         }
 
@@ -922,6 +997,45 @@ void colorTriangles(glm::vec4 colorTriangles){
         for(int i = 0; i < 7; i++)
             starLines[indexLines[i]].draw();
         
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+}
+
+void colorAllStar(){
+
+    while(true){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+       
+        for(int i = 0; i < 8; i++) {
+            
+            glm::vec4 triangleColor = starTriangles[i].getColor();
+
+            if (i >= 5){
+
+                triangleColor.a += 0.0003f;
+
+                starTriangles[i].setColor(triangleColor);
+
+                if(triangleColor.a > 1.0f)
+                    return;
+            }
+
+            starTriangles[i].draw();
+
+
+        }
+
+        for (int i = 0; i < 15; i++)
+            starLines[i].draw();
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -1156,5 +1270,9 @@ void goldenRectangleSceneStep2(Triangle& triangle1, Triangle& triangle2, Line& l
         glfwPollEvents();
 
     }
+
+}
+
+void jumpAllStar(){
 
 }
