@@ -58,6 +58,7 @@ void Line::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center){
 
 	updateModel();
 
+
 }
 
 void Line::scale(glm::vec3 scale){

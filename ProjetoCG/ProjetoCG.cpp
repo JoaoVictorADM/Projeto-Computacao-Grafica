@@ -1569,18 +1569,23 @@ void trianglesToRectanglesSceneStep2(GLfloat angle, std::vector<Triangle>& trian
     GLuint indexCenters[] = { 1, 3, 13, 6, 9 };
 
     glm::vec3 centers[10] = {
+
+		starTriangles[0].getPosition3(),
+        starTriangles[0].getPosition2(),
+
+        starTriangles[0].getPosition2(),
+        starTriangles[1].getPosition3(),
+
+        starTriangles[1].getPosition3(),
+        starTriangles[2].getPosition2(),
+
+        starTriangles[2].getPosition2(),
+        starTriangles[2].getPosition1(),
+
+        starTriangles[2].getPosition1(),
+        starTriangles[0].getPosition3(),
         
     };
-
-    for(int i = 0; i < 5; i++){
-        printf("%f %f %f\n", starLines[indexCenters[i]].getPosition1().x, starLines[indexCenters[i]].getPosition1().y, starLines[indexCenters[i]].getPosition1().z);
-        printf("%f %f %f\n", starLines[indexCenters[i]].getPosition2().x, starLines[indexCenters[i]].getPosition2().y, starLines[indexCenters[i]].getPosition2().z);
-    }
-
-    for (int i = 0; i < 5; i++) {
-		centers[i * 2] = starLines[indexCenters[i]].getPosition1();
-        centers[i * 2 + 1] = starLines[indexCenters[i]].getPosition2();
-    }
 
     for(int i = 0; i < steps; i++){
 
