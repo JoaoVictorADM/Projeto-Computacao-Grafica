@@ -5,7 +5,7 @@ Triangle::Triangle() {}
 Triangle::Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3, glm::vec4 color) :
 	_vectorTranslation(glm::vec3(0.0f)),
 	_vectorRotation(glm::vec3(0.0f)),
-	_vectorScale(glm::vec3(0.0f)),
+	_vectorScale(glm::vec3(1.0f)),
 	_matrixTranslation(glm::mat4(1.0f)),
 	_matrixRotation(glm::mat4(1.0f)),
 	_matrixScale(glm::mat4(1.0f)),

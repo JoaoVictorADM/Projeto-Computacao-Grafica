@@ -57,6 +57,14 @@ void goldenRectangleScene();
 void goldenRectangleSceneStep1(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint* indexLines);
 void goldenRectangleSceneStep2(Triangle& triangle1, Triangle& triangle2, Line& line, GLuint* indexLines);
 void colorAllStar();
+void jumpAllStarScene();
+void jumpAllStarSceneStep1(GLfloat min, GLfloat max);
+void jumpAllStarSceneStep2(GLfloat* min, GLfloat* max);
+void changeColorTrianglesScene();
+void edgesTranslation();
+void trianglesToRectanglesScene();
+void trianglesToRectanglesSceneStep1(std::vector<Triangle>& triangles);
+void trianglesToRectanglesSceneStep2(GLfloat angle, std::vector<Triangle>& triangles);
 
 
 /* Infos Window */
@@ -111,14 +119,14 @@ GLuint indexVertexStar[] = {
 };
 
 GLuint indexVextexStarTriangles[] = {
-    9, 6, 5,
-    9, 6, 7,
-    9, 8, 7,
-    9, 3, 5,
-    0, 6, 7,
-    4, 6, 5,
-    9, 8, 2,
-    1, 8, 7
+    9, 6, 5,  // 0
+    9, 6, 7,  // 1
+    9, 8, 7,  // 2
+    3, 9, 5,  // 3
+	0, 6, 7,  // 4
+	4, 6, 5,  // 5
+	2, 8, 9,  // 6
+	1, 8, 7   // 7
 };
 
 std::vector<Line> starLines;
@@ -152,21 +160,26 @@ int main(){
 
     glLineWidth(3.0f);
 
-    jumpScene();
+    updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background2.png");
+
+    /*jumpScene();
     spinRightScene();
     dismantleScene();
     goldenRuleScene();
     reassembleScene();
-    updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background2.png");
-    jumpScene();
+    jumpScene();*/
     starToTriangle1(71.9f, 0.02);
     colorTriangles(glm::vec4(1.0f, 0.41f, 0.70f, 0.0f));
-    openOrCloseTriangle(54.0f);
+    /*openOrCloseTriangle(54.0f);
     goldenRectangleScene();
-    openOrCloseTriangle(-54.0f);
+    openOrCloseTriangle(-54.0f);*/
 	colorTriangles(glm::vec4(0.12f, 0.56f, 1.0f, 0.0f));
     starToTriangle2(0.0f, -0.02);
     colorAllStar();
+    jumpAllStarScene();
+    changeColorTrianglesScene();
+    edgesTranslation();
+    trianglesToRectanglesScene();
 
     glfwTerminate();
     return 0;
@@ -351,9 +364,9 @@ glm::vec3 calculateCenter(GLfloat* vertexVector){
 
 void jumpScene(){
 
-    GLuint jumps = 8;
+    GLuint jumps = 1;
 
-	GLfloat speedY = 0.01f;
+	GLfloat speedY = 0.01;
 
     while(true){
 
@@ -1067,7 +1080,6 @@ void openOrCloseTriangle(GLfloat angle){
            
         for(int i = 2; i < 4; i++)
             starLines[indexLinesMove[i]].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), starLines[0].getPosition2());
-        
  
         for (int i = 0; i < 7; i++)
             starLines[indexLines[i]].draw();
@@ -1273,6 +1285,332 @@ void goldenRectangleSceneStep2(Triangle& triangle1, Triangle& triangle2, Line& l
 
 }
 
-void jumpAllStar(){
+void jumpAllStarScene(){
+
+	GLfloat min = 0.0f;
+    GLfloat max = 20.0f;
+
+    jumpAllStarSceneStep1(min, max);
+    jumpAllStarSceneStep2(&min, &max);
+    jumpAllStarSceneStep1(min, max);
 
 }
+
+void jumpAllStarSceneStep1(GLfloat min, GLfloat max){
+
+    GLuint jumps = 2;
+
+    GLfloat speedY = (max - min) / 2000.0f;
+
+    while(true){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for (int i = 0; i < 15; i++) {
+            starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
+            starLines[i].draw();
+
+        }
+
+        for(int i = 0; i < 8; i++){
+            starTriangles[i].translate(glm::vec3(0.0f, speedY, 0.0f));
+            starTriangles[i].draw();
+        }
+
+        if (starLines[0].getVectorTranslation().y <= min || starLines[0].getVectorTranslation().y >= max) {
+
+            speedY *= -1.0f;
+
+            if (starLines[0].getVectorTranslation().y <= min) {
+
+                jumps--;
+
+                if (jumps == 0)
+                    break;
+
+            }
+
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+}
+
+void jumpAllStarSceneStep2(GLfloat* min, GLfloat* max){
+
+	GLuint jumps = 2;
+    GLfloat scale = 1.0f;
+    GLfloat speedScale = 0.2/16000.0f;
+    GLfloat speedY = 0.01f;
+
+    while(true){
+        
+        GLfloat jumpHeight = (20.0f - ((20.0f - 0.0f) * scale)) / 2.0f;
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for (int i = 0; i < 15; i++){
+			starLines[i].scale(glm::vec3(-speedScale, -speedScale, 0.0f));
+            starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
+            starLines[i].draw();
+        }
+
+        for(int i = 0; i < 8; i++) {
+            starTriangles[i].scale(glm::vec3(-speedScale, -speedScale, 0.0f));
+            starTriangles[i].translate(glm::vec3(0.0f, speedY, 0.0f));
+            starTriangles[i].draw();
+        }
+
+		scale -= speedScale;
+        *min = 0.0f + jumpHeight;
+        *max = 20.0f - jumpHeight;
+        
+        if(starLines[0].getVectorTranslation().y <= *min || starLines[0].getVectorTranslation().y >= *max) {
+
+            speedY *= -1.0f;
+
+            if (starLines[0].getVectorTranslation().y <= *min) {
+
+                jumps--;
+
+                if (jumps == 0)
+                    break;
+
+            }
+
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+}
+
+void changeColorTrianglesScene(){
+
+    GLuint steps = 2000.0f;
+	GLfloat stepRed = (0.53f - 0.12f) / steps;
+	GLfloat stepGreen = (0.80f - 0.56f) / steps;
+
+    for(int i = 0; i < steps; i++){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for(int j = 0; j < 15; j++)
+            starLines[j].draw();
+        
+
+		for(int j = 0; j < 8; j++){
+
+            if(j >= 3){
+                glm::vec4 color = starTriangles[j].getColor();
+                color.r += stepRed;
+                color.g += stepGreen;
+                starTriangles[j].setColor(color);
+            }
+
+			
+			starTriangles[j].draw();
+
+		}
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+}
+
+void edgesTranslation(){
+
+    GLfloat pentagonLines[] = {1, 3, 13, 6, 9};
+    GLfloat trianglesIndex[] = { 5, 4, 7, 6, 3 };
+    GLuint steps = 2000;
+
+    glm::vec3 distances[5] = {};
+
+    GLfloat moveLines[] = { 1, 10, 11,  3, 0, 12,  13, 4, 14,  6, 5, 7,  9, 8, 2 };
+
+    for(int i = 0; i < 5; i++){
+
+		glm::vec3 midpoint = (starLines[pentagonLines[i]].getPosition1() + starLines[pentagonLines[i]].getPosition2()) / 2.0f;
+
+        distances[i] = ((starTriangles[trianglesIndex[i]].getPosition1() + midpoint) / 2.0f) - midpoint;
+    }
+
+    for(int i = 0; i < steps; i++){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for(int j = 0; j < 5; j++) {
+
+            glm::vec3 translation = glm::vec3(distances[j].x / steps, distances[j].y / steps, 0.0f);
+
+			starLines[moveLines[j * 3]].translate(translation);
+            starLines[moveLines[j * 3 + 1]].translate(translation);
+            starLines[moveLines[j * 3 + 2]].translate(translation);
+
+        }
+        
+        for(int j = 0; j < 8; j++)
+			starTriangles[j].draw();
+
+		for (int j = 0; j < 15; j++)
+			starLines[j].draw();
+        
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+}
+
+void trianglesToRectanglesScene(){
+
+    std::vector<Triangle> duplicatedTriangles;
+
+	glm::vec3 positions[] = {
+		starLines[1].getPosition1(),
+        starLines[10].getPosition2(),
+        starLines[1].getPosition2(),
+
+        starLines[3].getPosition1(),
+        starLines[3].getPosition2(),
+        starLines[0].getPosition2(),
+
+        starLines[13].getPosition1(),
+        starLines[13].getPosition2(),
+        starLines[4].getPosition2(),
+
+        starLines[6].getPosition1(),
+        starLines[6].getPosition2(),
+        starLines[7].getPosition1(),
+
+        starLines[9].getPosition1(),
+        starLines[9].getPosition2(),
+        starLines[8].getPosition2()
+	};
+
+	glm::vec4 color = starTriangles[7].getColor();
+    color.a = 0.0f;
+
+    for(int i = 0; i < 5; i++) {
+        duplicatedTriangles.emplace_back(
+            positions[i * 3],
+            positions[i * 3 + 1],
+            positions[i * 3 + 2],
+            color
+        );
+    }
+
+	trianglesToRectanglesSceneStep1(duplicatedTriangles);
+    trianglesToRectanglesSceneStep2(18.0f, duplicatedTriangles);
+
+}
+
+void trianglesToRectanglesSceneStep1(std::vector<Triangle> &triangles){
+
+	GLuint steps = 4000;
+
+    for(int i = 0; i < steps; i++){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+
+		glm::vec4 colorDuplicatedTriangles = triangles[0].getColor();
+        colorDuplicatedTriangles.a += 1.0f / steps;
+
+		glm::vec4 colorTriangles = starTriangles[7].getColor();
+		colorTriangles.a -= 1.0f / steps;
+
+        for(int j = 0; j < 8; j++){
+            
+            if(j >= 3)
+				starTriangles[j].setColor(colorTriangles);
+
+            if (j < 5){
+				triangles[j].setColor(colorDuplicatedTriangles);
+				triangles[j].draw();
+            }
+
+			starTriangles[j].draw();
+
+        }
+
+        for(int j = 0; j < 15; j++)
+			starLines[j].draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+}
+
+void trianglesToRectanglesSceneStep2(GLfloat angle, std::vector<Triangle>& triangles){
+
+    GLuint indexLinesMove[] = {10, 11,  0, 12,  4, 14,  5, 7,  8, 2};
+
+    GLuint steps = 1;
+
+    GLfloat speedAngle = angle / steps;
+
+    GLuint indexCenters[] = { 1, 3, 13, 6, 9 };
+
+    glm::vec3 centers[10] = {
+        
+    };
+
+    for(int i = 0; i < 5; i++){
+        printf("%f %f %f\n", starLines[indexCenters[i]].getPosition1().x, starLines[indexCenters[i]].getPosition1().y, starLines[indexCenters[i]].getPosition1().z);
+        printf("%f %f %f\n", starLines[indexCenters[i]].getPosition2().x, starLines[indexCenters[i]].getPosition2().y, starLines[indexCenters[i]].getPosition2().z);
+    }
+
+    for (int i = 0; i < 5; i++) {
+		centers[i * 2] = starLines[indexCenters[i]].getPosition1();
+        centers[i * 2 + 1] = starLines[indexCenters[i]].getPosition2();
+    }
+
+    for(int i = 0; i < steps; i++){
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawBackground(glm::mat4(1.0f));
+
+        for(int j = 0; j < 3; j++)
+            starTriangles[j].draw();
+
+        for(int j = 0; j < 5; j++)
+            triangles[j].draw();
+
+        for(int j = 0; j < 10; j++){
+
+			starLines[indexLinesMove[j]].rotate(speedAngle, glm::vec3(0.0f, 0.0f, 1.0f), centers[j]);
+			starLines[indexLinesMove[j]].draw();
+
+            speedAngle = -speedAngle;
+        }
+
+        for(int j = 0; j < 15; j++)
+            starLines[j].draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+    }
+
+    while (true);
+}
+
+

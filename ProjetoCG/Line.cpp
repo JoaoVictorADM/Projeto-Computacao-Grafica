@@ -5,7 +5,7 @@ Line::Line(){}
 Line::Line(glm::vec3 position1, glm::vec3 position2, glm::vec4 color) :
 	_vectorTranslation(glm::vec3(0.0f)),
 	_vectorRotation(glm::vec3(0.0f)),
-	_vectorScale(glm::vec3(0.0f)),
+	_vectorScale(glm::vec3(1.0f)),
 	_matrixTranslation(glm::mat4(1.0f)),
 	_matrixRotation(glm::mat4(1.0f)),
 	_matrixScale(glm::mat4(1.0f)),
@@ -54,7 +54,7 @@ void Line::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center){
 
 	glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), center); // Translação de volta para a posição original
 
-	_matrixRotation = translationBack * rotation * translationToOrigin; 
+	_matrixRotation = translationBack * rotation * translationToOrigin;
 
 	updateModel();
 
