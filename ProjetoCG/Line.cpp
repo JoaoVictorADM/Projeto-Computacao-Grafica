@@ -40,6 +40,7 @@ void Line::translate(glm::vec3 translation){
 	_vectorTranslation += translation;
 	_matrixTranslation = glm::translate(glm::mat4(1.0f), _vectorTranslation);
 	updateModel();
+
 }
 
 void Line::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center){
@@ -57,7 +58,6 @@ void Line::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center){
 	_matrixRotation = translationBack * rotation * translationToOrigin;
 
 	updateModel();
-
 
 }
 

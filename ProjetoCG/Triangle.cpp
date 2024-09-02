@@ -45,7 +45,7 @@ void Triangle::translate(glm::vec3 translation) {
 
 void Triangle::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center) {
 
-	_vectorRotation += axis * angle;
+	_vectorRotation += axis * (GLfloat)angle;
 
 	glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -center); // Translação para o ponto médio
 
