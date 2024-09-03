@@ -39,6 +39,7 @@ void Line::draw(){
 void Line::translate(glm::vec3 translation){
 	_vectorTranslation += translation;
 	_matrixTranslation = glm::translate(glm::mat4(1.0f), _vectorTranslation);
+
 	updateModel();
 
 }
@@ -62,9 +63,13 @@ void Line::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center){
 }
 
 void Line::scale(glm::vec3 scale){
+
 	_vectorScale += scale;
 	_matrixScale = glm::scale(glm::mat4(1.0f), _vectorScale);
-	updateModel();
+
+	_matrixModel = _matrixScale * _matrixModel;
+
+	//updateModel();
 }
 
 void Line::printarPontos(){

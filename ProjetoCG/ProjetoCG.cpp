@@ -69,6 +69,8 @@ void trianglesToRectanglesSceneStep3(std::vector<Triangle>& triangles);
 void trianglesToRectanglesSceneStep4(std::vector<Triangle>& newTriangles, std::vector<Line>& lines, std::vector<Triangle>& duplicatedTriangles);
 void trianglesToRectanglesSceneStep5(std::vector<Triangle>& newTriangles, std::vector<Line>& lines, std::vector<Triangle>& duplicatedTriangles);
 void jumpPentagon();
+void starInPentagon();
+void initVertexStarInPentagon();
 
 
 /* Infos Window */
@@ -143,6 +145,8 @@ std::vector<Line> margins;
 GLuint texture;
 GLuint VAOback, VBOback, EBOback;
 
+GLfloat vertexStarInPentagon[15000];
+
 int main(){
 
     ortho = glm::ortho(left, right, bottom, top, near, far);
@@ -168,18 +172,18 @@ int main(){
 
     updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background1.png");
 
-    /*jumpScene();
+    jumpScene();
     spinRightScene();
     dismantleScene();
     goldenRuleScene();
     reassembleScene();
     updateTexture("C:\\Users\\JV\\Desktop\\Repositorios Git\\Projeto-Computacao-Grafica\\background2.png");
-    jumpScene();*/
+    jumpScene();
     starToTriangle1(71.9f, 0.02f);
     colorTriangles(glm::vec4(1.0f, 0.41f, 0.70f, 0.0f));
-    /*openOrCloseTriangle(54.0f);
+    openOrCloseTriangle(54.0f);
     goldenRectangleScene();
-    openOrCloseTriangle(-54.0f);*/
+    openOrCloseTriangle(-54.0f);
 	colorTriangles(glm::vec4(0.12f, 0.56f, 1.0f, 0.0f));
     starToTriangle2(0.0f, -0.02f);
     colorAllStar();
@@ -189,6 +193,7 @@ int main(){
     edgesTranslation();
     trianglesToRectanglesScene();
     jumpPentagon();
+    starInPentagon();
 
     glfwTerminate();
     return 0;
@@ -846,6 +851,8 @@ void reassembleScene(){
 
 void starToTriangle1(GLfloat angle, GLfloat speedAngle){
 
+    starLines = createStar(glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
 	starTriangles = createStarTriangles();
 
     Line duplicatedLineGreen = Line(starLines[13].getPosition1(), // Linha duplicada para desenhar triangulo da esquerda(verde, print no disc)
@@ -1349,7 +1356,7 @@ void jumpAllStarSceneStep2(GLfloat* min, GLfloat* max){
 	GLuint jumps = 2;
     GLdouble scale = 1.0;
     GLdouble speedScale = 0;
-    GLfloat speedOrtho = 0.002;
+    GLfloat speedOrtho = 0.003;
     
     GLdouble speedY = 0.01;
 
@@ -1369,13 +1376,13 @@ void jumpAllStarSceneStep2(GLfloat* min, GLfloat* max){
         drawBackground(glm::mat4(1.0f));
 
         for (int i = 0; i < 15; i++){
-			starLines[i].scale(glm::vec3(-speedScale, -speedScale, 0.0f));
+			//starLines[i].scale(glm::vec3(-speedScale, -speedScale, 0.0f));
             starLines[i].translate(glm::vec3(0.0f, speedY, 0.0f));
             starLines[i].draw();
         }
 
         for(int i = 0; i < 8; i++) {
-            starTriangles[i].scale(glm::vec3(-speedScale, -speedScale, 0.0f));
+            //starTriangles[i].scale(glm::vec3(-speedScale, -speedScale, 0.0f));
             starTriangles[i].translate(glm::vec3(0.0f, speedY, 0.0f));
             starTriangles[i].draw();
         }
@@ -1914,7 +1921,7 @@ void jumpPentagon(){
     GLuint jumps = 3;
     GLdouble scale = 1.0;
     GLdouble speedScale = 0;
-    GLfloat speedOrtho = 0.005;
+    GLfloat speedOrtho = 0.007;
 
     GLdouble speedY = 0.01;
 
@@ -1955,7 +1962,7 @@ void jumpPentagon(){
 
                 jumps--;
 
-                if (jumps == 0)
+                if(jumps == 0)
                     break;
 
             }
@@ -1967,9 +1974,118 @@ void jumpPentagon(){
 
     }
 
-    while (true);
+}
+void starInPentagon(){
+
+    initVertexStarInPentagon();
+
+    GLuint VAO, VBO;
+
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexStarInPentagon), vertexStarInPentagon, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &VAO); 
+    glBindVertexArray(VAO);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, 0);
+    glEnableVertexAttribArray(0);
+
+    while (true) {
+        for (int i = 0; i < 5000; i++) {
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            drawBackground(glm::mat4(1.0f));
+
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+            objectShader.SendUniformData("colorOut", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            objectShader.SendUniformData("Matrix", ortho);
+
+            glDrawArrays(GL_LINE_STRIP, 0, i);
+
+            for (int j = 0; j < 3; j++)
+                starTriangles[j].draw();
+
+            for (int j = 0; j < 5; j++)
+                margins[j].draw();
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+
+        }
+    }
 
 }
+
+void initVertexStarInPentagon(){
+
+    GLuint steps = 1000;
+
+    GLfloat stepDistances[] = {
+
+        fabs((starTriangles[0].getPosition3().x - starTriangles[2].getPosition2().x) / (GLfloat)steps),
+        fabs((starTriangles[2].getPosition2().x - starTriangles[0].getPosition2().x) / (GLfloat)steps),
+		fabs((starTriangles[0].getPosition2().x - starTriangles[0].getPosition1().x) / (GLfloat)steps),
+		fabs((starTriangles[0].getPosition1().x - starTriangles[1].getPosition3().x) / (GLfloat)steps),
+		fabs((starTriangles[1].getPosition3().x - starTriangles[0].getPosition3().x) / (GLfloat)steps)
+
+    };
+
+    for (int j = 0; j < steps; j++){
+
+        GLfloat x = starTriangles[0].getPosition3().x + (stepDistances[0] * j);
+
+        vertexStarInPentagon[(j * 3)] = x;
+        vertexStarInPentagon[(j * 3) + 1] = -3.078f * x - 10.39f;
+        vertexStarInPentagon[(j * 3) + 2] = 5.0f;
+            
+    }
+
+    for (int j = 1000; j < 1000 + steps; j++) {
+
+        GLfloat x = starTriangles[2].getPosition2().x + (stepDistances[1] * (j - 1000));
+
+        vertexStarInPentagon[(j * 3)] = x;
+		vertexStarInPentagon[(j * 3) + 1] = 3.078f * x - 10.39f;
+		vertexStarInPentagon[(j * 3) + 2] = 5.0f;
+
+    }
+
+    for (int j = 2000; j < 2000 + steps; j++) {
+
+        GLfloat x = starTriangles[0].getPosition2().x - (stepDistances[2] * (j - 2000));
+
+        vertexStarInPentagon[(j * 3)] = x;
+		vertexStarInPentagon[(j * 3) + 1] = 0.7265087853323f * x + 1.3674560733384f;
+		vertexStarInPentagon[(j * 3) + 2] = 5.0f;
+
+    }
+
+    for (int j = 3000; j < 3000 + steps; j++) {
+
+        GLfloat x = starTriangles[0].getPosition1().x + (stepDistances[3] * (j - 3000));
+
+        vertexStarInPentagon[(j * 3)] = x;
+		vertexStarInPentagon[(j * 3) + 1] = -4.51f;
+		vertexStarInPentagon[(j * 3) + 2] = 5.0f;
+
+    }
+
+    for (int j = 4000; j < 4000 + steps; j++) {
+
+        GLfloat x = starTriangles[1].getPosition3().x - (stepDistances[4] * (j - 4000));
+
+        vertexStarInPentagon[(j * 3)] = x;
+		vertexStarInPentagon[(j * 3) + 1] = -0.7265087853323f * x + 1.3674560733384f;
+		vertexStarInPentagon[(j * 3) + 2] = 5.0f;
+
+    }
+
+}
+
 
 
 
