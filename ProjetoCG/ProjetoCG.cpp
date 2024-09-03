@@ -228,10 +228,10 @@ void initOpenGL(){
 void configTexture() {
     GLfloat vertices[] = {
         // Posições           // Cores          // Coordenadas de textura
-        -100.0f, -100.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f, 1.0f,  // Canto inferior esquerdo (vermelho)
-         100.0f, -100.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 1.0f,  // Canto inferior direito (vermelho)
-         100.0f,  100.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f,  // Canto superior direito (vermelho)
-        -100.0f,  100.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f, 0.0f   // Canto superior esquerdo (vermelho)
+        -120.0f, -120.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f, 1.0f,  // Canto inferior esquerdo (vermelho)
+         120.0f, -120.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 1.0f,  // Canto inferior direito (vermelho)
+         120.0f,  120.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f,  // Canto superior direito (vermelho)
+        -120.0f,  120.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f, 0.0f   // Canto superior esquerdo (vermelho)
     };
 
     GLuint indices[] = {  // Índices para desenhar o quadrado com dois triângulos
@@ -378,10 +378,10 @@ glm::vec3 calculateCenter(GLfloat* vertexVector){
 
 void jumpScene(){
 
-    GLuint jumps = 1;
+    GLuint jumps = 8;
 
 	GLfloat speedY = 0.01f;
-
+    
     while(true){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -789,13 +789,45 @@ void goldenRuleSceneStep8(Line& line){
 
 void reassembleScene(){
 
+    starLines[7] = Line(starLines[5].getPosition1(),
+                   starLines[5].getPosition2(),
+                   glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+    starLines[8] = Line(starLines[5].getPosition1(),
+                   starLines[5].getPosition2(),
+                   glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+    starLines[9] = Line(starLines[3].getPosition1(),
+                   starLines[3].getPosition2(),
+                   glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+    starLines[10] = Line(starLines[5].getPosition1(),
+                    starLines[5].getPosition2(),
+                    glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+    starLines[11] = Line(starLines[5].getPosition1(),
+                    starLines[5].getPosition2(),
+                    glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+    starLines[12] = Line(starLines[2].getPosition1(),
+                    starLines[2].getPosition2(),
+                    glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+    starLines[13] = Line(starLines[1].getPosition1(),
+                    starLines[1].getPosition2(),
+                    glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
+	starLines[14] = Line(starLines[4].getPosition1(),
+		            starLines[4].getPosition2(),
+		            glm::vec4(1.0f, 0.71f, 0.76f, 1.0f));
+
     while(true){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawBackground(glm::mat4(1.0f));
 
-        GLfloat speedReassemble = 0.1f;
+        GLfloat speedReassemble = 0.01f;
 
         // Montar as linhas restantes do pentagrama
         for(int i = 0; i < 15; i++){
