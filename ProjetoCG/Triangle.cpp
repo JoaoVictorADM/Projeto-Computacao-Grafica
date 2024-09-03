@@ -5,7 +5,7 @@ Triangle::Triangle() {}
 Triangle::Triangle(glm::vec3 position1, glm::vec3 position2, glm::vec3 position3, glm::vec4 color) :
 	_vectorTranslation(glm::vec3(0.0f)),
 	_vectorRotation(glm::vec3(0.0f)),
-	_vectorScale(glm::vec3(0.0f)),
+	_vectorScale(glm::vec3(1.0f)),
 	_matrixTranslation(glm::mat4(1.0f)),
 	_matrixRotation(glm::mat4(1.0f)),
 	_matrixScale(glm::mat4(1.0f)),
@@ -45,7 +45,7 @@ void Triangle::translate(glm::vec3 translation) {
 
 void Triangle::rotate(GLfloat angle, glm::vec3 axis, glm::vec3 center) {
 
-	_vectorRotation += axis * angle;
+	_vectorRotation += axis * (GLfloat)angle;
 
 	glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -center); // Translação para o ponto médio
 
